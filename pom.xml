@@ -11,6 +11,15 @@
 
     <name>EFX CLI</name>
     <description>Command Line Interface for the EFX Toolkit</description>
+    <url>https://docs.ted.europa.eu/eforms/latest/efx-toolkit/</url>
+
+    <licenses>
+        <license>
+            <name>European Union Public Licence, Version 1.2</name>
+            <url>https://joinup.ec.europa.eu/sites/default/files/custom-page/attachment/2020-03/EUPL-1.2%20EN.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -88,10 +97,25 @@
                         </goals>
                         <configuration>
                             <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>eu.europa.ted.eforms.efx.cli.EfxCli</mainClass>
+                                    <mainClass>eu.europa.ted.eforms.efx.cli.Application</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Title>${project.artifactId}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
