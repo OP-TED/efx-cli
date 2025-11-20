@@ -1,4 +1,4 @@
-package eu.europa.ted.eforms.efx.cli;
+package eu.europa.ted.efx.cli;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

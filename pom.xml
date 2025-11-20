@@ -99,7 +99,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>eu.europa.ted.eforms.efx.cli.Application</mainClass>
+                                    <mainClass>eu.europa.ted.efx.cli.Application</mainClass>
                                     <manifestEntries>
                                         <Implementation-Title>${project.artifactId}</Implementation-Title>
                                         <Implementation-Version>${project.version}</Implementation-Version>
@@ -124,3 +124,5 @@
         </plugins>
     </build>
 </project>
+<!-- Trigger re-import -->
+
