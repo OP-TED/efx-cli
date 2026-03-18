@@ -1,18 +1,20 @@
 package eu.europa.ted.efx.cli;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 
+import eu.europa.ted.eforms.sdk.SdkConstants;
+import eu.europa.ted.efx.EfxTranslator;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import eu.europa.ted.efx.EfxTranslator;
 
 @Command(name = "translate-rules", description = "Translates EFX rules to Schematron")
 public class TranslateRulesCommand implements Callable<Integer> {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TranslateRulesCommand.class);
+
 
     @Option(names = { "-i", "--input" }, description = "Input EFX rules file", required = true)
     Path inputFile;
@@ -23,12 +25,17 @@ public class TranslateRulesCommand implements Callable<Integer> {
     @Option(names = { "-v", "--sdk-version" }, description = "eForms SDK version (e.g. 1.0, 1.1)", required = true)
     String sdkVersion;
 
-    @Option(names = { "-p", "--sdk-path" }, description = "Path to eForms SDK root", required = true)
+    @Option(names = { "-p", "--sdk-path" }, description = "Path to eForms SDK root", required = false)
     Path sdkPath;
 
     @Override
     public Integer call() throws Exception {
+        if (sdkPath == null) {
+            sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
+        }
+
         System.out.println("Translating rules from " + inputFile + " to " + outputDir);
+        System.out.println("Using SDK at: " + sdkPath.toAbsolutePath());
 
         EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(sdkPath);
 
@@ -53,8 +60,7 @@ public class TranslateRulesCommand implements Callable<Integer> {
             System.out.println("Translation completed successfully.");
             return 0;
         } catch (Exception e) {
-            System.err.println("Translation failed: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Translation failed: {}", e.getMessage(), e);
             return 1;
         }
     }

@@ -5,7 +5,10 @@ import java.nio.file.Path;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 
+import java.io.IOException;
+
 import eu.europa.ted.eforms.sdk.SdkSymbolResolver;
+import eu.europa.ted.eforms.sdk.resource.SdkDownloader;
 import eu.europa.ted.efx.interfaces.MarkupGenerator;
 import eu.europa.ted.efx.interfaces.ScriptGenerator;
 import eu.europa.ted.efx.interfaces.SymbolResolver;
@@ -26,8 +29,9 @@ public class EfxCliTranslatorDependencyFactory implements TranslatorDependencyFa
     @Override
     public SymbolResolver createSymbolResolver(String sdkVersion, String qualifier) {
         try {
+            SdkDownloader.downloadSdk(sdkVersion, sdkRootPath, false);
             return new SdkSymbolResolver(sdkVersion, sdkRootPath);
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IOException e) {
             throw new RuntimeException("Failed to instantiate SdkSymbolResolver", e);
         }
     }

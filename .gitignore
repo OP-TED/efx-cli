@@ -33,3 +33,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Project Specific ###
+eforms-sdk/
+*.log
+*.efx
+fix_rules.py
