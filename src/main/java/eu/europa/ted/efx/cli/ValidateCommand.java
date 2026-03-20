@@ -31,6 +31,7 @@ import eu.europa.ted.eforms.sdk.SdkConstants;
 import eu.europa.ted.efx.EfxTranslator;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
 @Command(name = "validate", description = "Validate an XML notice against EFX rules")
 public class ValidateCommand implements Callable<Integer> {
@@ -40,7 +41,10 @@ public class ValidateCommand implements Callable<Integer> {
     private static final String SCHEMATRON_NS = "http://purl.oclc.org/dsdl/schematron";
     private static final String API_URL_PREFIX = "apiUrl-";
 
-    @Option(names = { "-i", "--input" }, description = "Input EFX rules file")
+    @ParentCommand
+    CliCommand parent;
+
+    @Option(names = { "-r", "--rules" }, description = "EFX rules file")
     Path inputFile;
 
     @Option(names = { "-s", "--schematron" }, description = "Pre-compiled Schematron file (skips EFX translation)")
@@ -58,37 +62,89 @@ public class ValidateCommand implements Callable<Integer> {
     @Option(names = { "-e", "--endpoint" }, description = "Runtime endpoint URL override (e.g. default=http://localhost:8080/v1)")
     Map<String, String> endpointOverrides = new HashMap<>();
 
-    @Option(names = { "--mode" }, description = "Validation mode: schxslt or phpure (default: schxslt)",
-            defaultValue = "schxslt")
+    @Option(names = { "-o", "--output" }, description = "Write raw SVRL report to file")
+    Path outputFile;
+
+    @Option(names = { "--mock" }, description = "Start a built-in mock API server. Values: true (returns 1), false (returns 0), error (returns -1)",
+            arity = "0..1", defaultValue = Option.NULL_VALUE, fallbackValue = "true")
+    String mock;
+
+    @Option(names = { "--mode" }, description = "Validation mode: schxslt or phpure (default: schxslt)")
     String mode;
 
     @Override
     public Integer call() throws Exception {
+        final SessionContext session = SessionContext.instance();
+
+        if (this.parent != null && this.parent.verbose) {
+            session.setVerbose(true);
+            LoggingConfigurator.enableDebug();
+        } else if (session.verbose()) {
+            LoggingConfigurator.enableDebug();
+        }
+
+        if (this.sdkVersion == null) {
+            this.sdkVersion = session.sdkVersion();
+        } else {
+            session.setSdkVersion(this.sdkVersion);
+        }
+
+        if (this.sdkPath == null) {
+            this.sdkPath = session.sdkPath();
+        } else {
+            session.setSdkPath(this.sdkPath);
+        }
+
+        if (this.mode == null) {
+            this.mode = session.mode();
+        } else {
+            if (!"schxslt".equalsIgnoreCase(this.mode) && !"phpure".equalsIgnoreCase(this.mode)) {
+                logger.error("Invalid mode: {} (expected: schxslt or phpure)", this.mode);
+                return 1;
+            }
+            session.setMode(this.mode);
+        }
+
         if (this.inputFile == null && this.schematronFile == null) {
-            logger.error("Either --input (EFX file) or --schematron (pre-compiled .sch) is required");
+            logger.error("Either --rules (EFX file) or --schematron (pre-compiled .sch) is required");
+            return 1;
+        }
+
+        if (this.inputFile != null && !Files.exists(this.inputFile)) {
+            logger.error("Rules file not found: {}", this.inputFile);
+            return 1;
+        }
+
+        if (this.schematronFile != null && !Files.exists(this.schematronFile)) {
+            logger.error("Schematron file not found: {}", this.schematronFile);
+            return 1;
+        }
+
+        if (!Files.exists(this.noticeFile)) {
+            logger.error("Notice file not found: {}", this.noticeFile);
             return 1;
         }
 
         if (this.inputFile != null && this.sdkVersion == null) {
-            logger.error("--sdk-version is required when using --input");
+            logger.error("--sdk-version is required when using --rules");
             return 1;
         }
 
         System.out.println("Validating notice: " + this.noticeFile);
         System.out.println("Mode: " + this.mode);
 
-        try {
+        try (MockApiServer mockServer = this.startMockServer()) {
             final File schFile;
             if (this.schematronFile != null) {
                 schFile = this.schematronFile.toFile();
-                System.out.println("Using pre-compiled Schematron: " + this.schematronFile);
             } else {
-                System.out.println("Translating EFX rules from " + this.inputFile);
                 if (this.sdkPath == null) {
                     this.sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
                 }
                 final Path tempDir = Files.createTempDirectory("efx-validate-");
-                this.translateRules(tempDir);
+                try (Spinner ignored = new Spinner("Translating EFX rules...")) {
+                    this.translateRules(tempDir);
+                }
                 schFile = tempDir.resolve("dynamic/complete-validation.sch").toFile();
             }
 
@@ -97,15 +153,31 @@ public class ValidateCommand implements Callable<Integer> {
                 return 1;
             }
 
+            if (mockServer != null) {
+                this.overrideAllEndpoints(schFile, mockServer.baseUrl());
+            }
+
             final Document svrl;
-            if ("phpure".equalsIgnoreCase(this.mode)) {
-                svrl = this.validatePhpure(schFile);
-            } else {
-                svrl = this.validateSchxslt(schFile);
+            try (Spinner ignored = new Spinner("Validating notice...")) {
+                if ("phpure".equalsIgnoreCase(this.mode)) {
+                    svrl = this.validatePhpure(schFile);
+                } else {
+                    svrl = this.validateSchxslt(schFile);
+                }
+            }
+
+            if (this.outputFile != null) {
+                final Transformer serializer = TransformerFactory.newInstance().newTransformer();
+                serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+                serializer.transform(new DOMSource(svrl), new StreamResult(this.outputFile.toFile()));
+                System.out.println("SVRL report written to: " + this.outputFile);
             }
 
             final ValidationResult result = new ValidationResult(svrl);
-            result.print(System.out);
+            for (final ValidationResult.Failure failure : result.failures()) {
+                System.out.printf("[%s] %s at %s: %s%n",
+                        failure.role(), failure.id(), failure.location(), failure.message());
+            }
 
             if (result.isValid()) {
                 System.out.println("Validation passed.");
@@ -115,8 +187,46 @@ public class ValidateCommand implements Callable<Integer> {
 
             return result.isValid() ? 0 : 1;
         } catch (final Exception e) {
-            logger.error("Validation failed: {}", e.getMessage(), e);
+            logger.error("Validation failed: {}", e.getMessage());
+            logger.debug("Stack trace:", e);
             return 1;
+        }
+    }
+
+    private MockApiServer startMockServer() throws Exception {
+        if (this.mock == null) {
+            return null;
+        }
+        final String response;
+        switch (this.mock.toLowerCase()) {
+            case "true":
+                response = "1";
+                break;
+            case "false":
+                response = "0";
+                break;
+            case "error":
+                response = "-1";
+                break;
+            default:
+                response = this.mock;
+                break;
+        }
+        final MockApiServer server = new MockApiServer(response);
+        System.out.println("Mock API server started at " + server.baseUrl() + " (response: " + response + ")");
+        return server;
+    }
+
+    private void overrideAllEndpoints(final File schFile, final String mockUrl) throws Exception {
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        final Document doc = dbf.newDocumentBuilder().parse(schFile);
+        final NodeList lets = doc.getElementsByTagNameNS(SCHEMATRON_NS, "let");
+        for (int i = 0; i < lets.getLength(); i++) {
+            final String name = ((Element) lets.item(i)).getAttribute("name");
+            if (name.startsWith(API_URL_PREFIX)) {
+                this.endpointOverrides.put(name.substring(API_URL_PREFIX.length()), mockUrl);
+            }
         }
     }
 

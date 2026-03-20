@@ -4,7 +4,7 @@
 
     <ns prefix="efx" uri="http://eforms.ted.europa.eu/efx"/>
 
-    <let name="apiUrl-default" value="'http://localhost:33625/v1'"/>
+    <let name="apiUrl-default" value="'http://localhost:39155/v1'"/>
 
     <xsl:function as="xs:integer" name="efx:call-api">
         <xsl:param as="xs:string" name="endpoint-url"/>

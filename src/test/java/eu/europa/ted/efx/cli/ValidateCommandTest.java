@@ -129,7 +129,7 @@ class ValidateCommandTest {
         try {
             final int exitCode = new CommandLine(new CliCommand()).execute(
                     "validate",
-                    "--input", TEST_EFX.toString(),
+                    "--rules", TEST_EFX.toString(),
                     "--notice", TEST_CN_NOTICE.toString(),
                     "--sdk-version", SDK_VERSION,
                     "--sdk-path", SDK_PATH,

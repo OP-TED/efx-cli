@@ -2,19 +2,22 @@ package eu.europa.ted.efx.cli;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import eu.europa.ted.eforms.sdk.SdkConstants;
 import eu.europa.ted.efx.EfxTranslator;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
 @Command(name = "translate-rules", description = "Translates EFX rules to Schematron")
 public class TranslateRulesCommand implements Callable<Integer> {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TranslateRulesCommand.class);
 
+    @ParentCommand
+    CliCommand parent;
 
     @Option(names = { "-i", "--input" }, description = "Input EFX rules file", required = true)
     Path inputFile;
@@ -22,46 +25,73 @@ public class TranslateRulesCommand implements Callable<Integer> {
     @Option(names = { "-o", "--output" }, description = "Output directory", required = true)
     Path outputDir;
 
-    @Option(names = { "-v", "--sdk-version" }, description = "eForms SDK version (e.g. 1.0, 1.1)", required = true)
+    @Option(names = { "-v", "--sdk-version" }, description = "eForms SDK version (e.g. 1.0, 1.1)")
     String sdkVersion;
 
-    @Option(names = { "-p", "--sdk-path" }, description = "Path to eForms SDK root", required = false)
+    @Option(names = { "-p", "--sdk-path" }, description = "Path to eForms SDK root")
     Path sdkPath;
 
     @Override
     public Integer call() throws Exception {
-        if (sdkPath == null) {
-            sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
+        final SessionContext session = SessionContext.instance();
+
+        if (this.parent != null && this.parent.verbose) {
+            session.setVerbose(true);
+            LoggingConfigurator.enableDebug();
+        } else if (session.verbose()) {
+            LoggingConfigurator.enableDebug();
         }
 
-        System.out.println("Translating rules from " + inputFile + " to " + outputDir);
-        System.out.println("Using SDK at: " + sdkPath.toAbsolutePath());
+        if (this.sdkVersion == null) {
+            this.sdkVersion = session.sdkVersion();
+        } else {
+            session.setSdkVersion(this.sdkVersion);
+        }
 
-        EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(sdkPath);
+        if (this.sdkPath == null) {
+            this.sdkPath = session.sdkPath();
+        } else {
+            session.setSdkPath(this.sdkPath);
+        }
 
-        try {
-            Map<String, String> result = EfxTranslator.translateRules(factory, sdkVersion, inputFile);
+        if (this.sdkVersion == null) {
+            logger.error("--sdk-version is required (or set via: config sdk-version <version>)");
+            return 1;
+        }
 
-            File outDir = outputDir.toFile();
+        if (!Files.exists(this.inputFile)) {
+            logger.error("Input file not found: {}", this.inputFile);
+            return 1;
+        }
+
+        System.out.println("Translating rules from " + this.inputFile + " to " + this.outputDir);
+        System.out.println("Using SDK at: " + this.sdkPath.toAbsolutePath());
+
+        final EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(this.sdkPath);
+
+        try (Spinner ignored = new Spinner("Translating EFX rules...")) {
+            final Map<String, String> result = EfxTranslator.translateRules(factory, this.sdkVersion, this.inputFile);
+
+            final File outDir = this.outputDir.toFile();
             if (!outDir.exists()) {
                 outDir.mkdirs();
             }
 
-            for (Map.Entry<String, String> entry : result.entrySet()) {
-                File outFile = new File(outDir, entry.getKey());
-                // Ensure parent directories exist
+            for (final Map.Entry<String, String> entry : result.entrySet()) {
+                final File outFile = new File(outDir, entry.getKey());
                 outFile.getParentFile().mkdirs();
                 try (FileWriter writer = new FileWriter(outFile)) {
                     writer.write(entry.getValue());
                 }
                 System.out.println("Generated: " + outFile.getAbsolutePath());
             }
-
-            System.out.println("Translation completed successfully.");
-            return 0;
-        } catch (Exception e) {
-            logger.error("Translation failed: {}", e.getMessage(), e);
+        } catch (final Exception e) {
+            logger.error("Translation failed: {}", e.getMessage());
+            logger.debug("Stack trace:", e);
             return 1;
         }
+
+        System.out.println("Translation completed successfully.");
+        return 0;
     }
 }

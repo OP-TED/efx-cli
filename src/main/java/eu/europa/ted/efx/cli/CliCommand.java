@@ -15,17 +15,16 @@ import java.util.concurrent.Callable;
         " ▒▒▒▒▒▒   ▒▒▒▒▒     ▒▒▒▒▒ ▒▒▒▒▒             ▒▒▒▒▒▒  ▒▒▒▒▒ ▒▒▒▒▒ ",
         "",
         "Command Line Interface for the EFX Toolkit"
-}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class, ValidateCommand.class })
+}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class, ValidateCommand.class, ConfigCommand.class, ClearCommand.class })
 public class CliCommand implements Callable<Integer> {
 
-    @Option(names = { "-v", "--verbose" }, description = "Enable verbose output")
+    @Option(names = { "--verbose" }, description = "Enable verbose output", scope = picocli.CommandLine.ScopeType.INHERIT)
     boolean verbose;
 
     @Override
     public Integer call() throws Exception {
-        System.out.println("Hello from EFX CLI!");
-        if (verbose) {
-            System.out.println("Verbose mode is on.");
+        if (this.verbose) {
+            LoggingConfigurator.enableDebug();
         }
         return 0;
     }

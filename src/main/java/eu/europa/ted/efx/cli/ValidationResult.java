@@ -1,7 +1,7 @@
 package eu.europa.ted.efx.cli;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -31,11 +31,8 @@ class ValidationResult {
         return this.failures.size();
     }
 
-    void print(final PrintStream out) {
-        for (final Failure failure : this.failures) {
-            out.printf("[%s] %s at %s: %s%n",
-                    failure.role, failure.id, failure.location, failure.message);
-        }
+    List<Failure> failures() {
+        return Collections.unmodifiableList(this.failures);
     }
 
     private void extractFailures(final NodeList nodes) {
@@ -49,18 +46,23 @@ class ValidationResult {
         }
     }
 
-    private static class Failure {
+    static class Failure {
         private final String id;
         private final String location;
         private final String role;
         private final String message;
 
-        private Failure(final String id, final String location,
+        Failure(final String id, final String location,
                 final String role, final String message) {
             this.id = id;
             this.location = location;
             this.role = role;
             this.message = message;
         }
+
+        String id() { return this.id; }
+        String location() { return this.location; }
+        String role() { return this.role; }
+        String message() { return this.message; }
     }
 }
