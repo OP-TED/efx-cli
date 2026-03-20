@@ -198,10 +198,12 @@ public class ValidateCommand implements Callable<Integer> {
                         failure.role(), failure.id(), failure.location(), failure.message());
             }
 
+            System.out.printf("%d rule(s) checked, %d failure(s).%n",
+                    result.rulesChecked(), result.failureCount());
             if (result.isValid()) {
                 System.out.println("Validation passed.");
             } else {
-                System.out.printf("Validation failed with %d failure(s).%n", result.failureCount());
+                System.out.println("Validation failed.");
             }
 
             return result.isValid() ? 0 : 1;

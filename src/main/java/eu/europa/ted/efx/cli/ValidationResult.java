@@ -29,15 +29,21 @@ class ValidationResult {
 
     private static final String SVRL_NS = "http://purl.oclc.org/dsdl/svrl";
 
+    private final int rulesChecked;
     private final List<Failure> failures = new ArrayList<>();
 
     ValidationResult(final Document svrl) {
+        this.rulesChecked = svrl.getElementsByTagNameNS(SVRL_NS, "fired-rule").getLength();
         this.extractFailures(svrl.getElementsByTagNameNS(SVRL_NS, "failed-assert"));
         this.extractFailures(svrl.getElementsByTagNameNS(SVRL_NS, "successful-report"));
     }
 
     boolean isValid() {
         return this.failures.isEmpty();
+    }
+
+    int rulesChecked() {
+        return this.rulesChecked;
     }
 
     int failureCount() {
