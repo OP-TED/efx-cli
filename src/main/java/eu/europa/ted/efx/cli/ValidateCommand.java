@@ -294,7 +294,8 @@ public class ValidateCommand implements Callable<Integer> {
             effectiveSchFile = schFile;
         } else {
             final byte[] patched = this.patchEndpointParams(schFile);
-            effectiveSchFile = new File(schFile.getParentFile(), "patched-" + schFile.getName());
+            effectiveSchFile = File.createTempFile("patched-", ".sch", schFile.getParentFile());
+            effectiveSchFile.deleteOnExit();
             Files.write(effectiveSchFile.toPath(), patched);
         }
 
