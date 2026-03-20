@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
         " ▒▒▒▒▒▒   ▒▒▒▒▒     ▒▒▒▒▒ ▒▒▒▒▒             ▒▒▒▒▒▒  ▒▒▒▒▒ ▒▒▒▒▒ ",
         "",
         "Command Line Interface for the EFX Toolkit"
-}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class })
+}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class, ValidateCommand.class })
 public class CliCommand implements Callable<Integer> {
 
     @Option(names = { "-v", "--verbose" }, description = "Enable verbose output")
