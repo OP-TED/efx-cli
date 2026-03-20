@@ -179,12 +179,18 @@ public class ValidateCommand implements Callable<Integer> {
                 }
             }
 
-            if (this.outputFile != null) {
-                final Transformer serializer = TransformerFactory.newInstance().newTransformer();
-                serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-                serializer.transform(new DOMSource(svrl), new StreamResult(this.outputFile.toFile()));
-                System.out.println("SVRL report written to: " + this.outputFile);
+            if (this.outputFile == null) {
+                final String noticeName = this.noticeFile.getFileName().toString();
+                final int dot = noticeName.lastIndexOf('.');
+                final String baseName = dot >= 0 ? noticeName.substring(0, dot) : noticeName;
+                final Path outputDir = Path.of("output");
+                Files.createDirectories(outputDir);
+                this.outputFile = outputDir.resolve(baseName + ".svrl");
             }
+            final Transformer serializer = TransformerFactory.newInstance().newTransformer();
+            serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+            serializer.transform(new DOMSource(svrl), new StreamResult(this.outputFile.toFile()));
+            System.out.println("SVRL report written to: " + this.outputFile);
 
             final ValidationResult result = new ValidationResult(svrl);
             for (final ValidationResult.Failure failure : result.failures()) {
