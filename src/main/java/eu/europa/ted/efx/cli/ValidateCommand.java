@@ -193,9 +193,19 @@ public class ValidateCommand implements Callable<Integer> {
             System.out.println("SVRL report written to: " + this.outputFile);
 
             final ValidationResult result = new ValidationResult(svrl);
+            final LabelResolver labels;
+            if (session.labels()) {
+                try (Spinner ignored = new Spinner("Loading labels...")) {
+                    labels = session.labelResolver();
+                }
+            } else {
+                labels = null;
+            }
             for (final ValidationResult.Failure failure : result.failures()) {
+                final String message = labels != null
+                        ? labels.resolve(failure.message()) : failure.message();
                 System.out.printf("[%s] %s at %s: %s%n",
-                        failure.role(), failure.id(), failure.location(), failure.message());
+                        failure.role(), failure.id(), failure.location(), message);
             }
 
             System.out.printf("%d rule(s) checked, %d failure(s).%n",

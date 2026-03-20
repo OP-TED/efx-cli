@@ -39,9 +39,17 @@ public enum SessionSetting {
             SessionContext::mode,
             (ctx, val) -> ctx.setMode(val)),
 
+    LANGUAGE("language", Collections.emptyList(), false,
+            SessionContext::language,
+            (ctx, val) -> ctx.setLanguage(val)),
+
     VERBOSE("verbose", Arrays.asList("true", "false"), false,
             ctx -> String.valueOf(ctx.verbose()),
-            (ctx, val) -> ctx.setVerbose(Boolean.parseBoolean(val)));
+            (ctx, val) -> ctx.setVerbose(Boolean.parseBoolean(val))),
+
+    LABELS("labels", Arrays.asList("true", "false"), false,
+            ctx -> String.valueOf(ctx.labels()),
+            (ctx, val) -> ctx.setLabels(Boolean.parseBoolean(val)));
 
     private final String key;
     private final List<String> allowedValues;

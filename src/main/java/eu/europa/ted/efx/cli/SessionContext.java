@@ -27,7 +27,10 @@ public final class SessionContext {
     private String sdkVersion;
     private Path sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
     private String mode = "phpure";
+    private String language = "en";
     private boolean verbose;
+    private boolean labels;
+    private LabelResolver cachedLabelResolver;
 
     private SessionContext() {
     }
@@ -41,7 +44,10 @@ public final class SessionContext {
     }
 
     public void setSdkVersion(final String sdkVersion) {
-        this.sdkVersion = sdkVersion;
+        if (!java.util.Objects.equals(this.sdkVersion, sdkVersion)) {
+            this.sdkVersion = sdkVersion;
+            this.cachedLabelResolver = null;
+        }
     }
 
     public Path sdkPath() {
@@ -49,7 +55,10 @@ public final class SessionContext {
     }
 
     public void setSdkPath(final Path sdkPath) {
-        this.sdkPath = sdkPath;
+        if (!java.util.Objects.equals(this.sdkPath, sdkPath)) {
+            this.sdkPath = sdkPath;
+            this.cachedLabelResolver = null;
+        }
     }
 
     public String mode() {
@@ -60,12 +69,38 @@ public final class SessionContext {
         this.mode = mode;
     }
 
+    public String language() {
+        return this.language;
+    }
+
+    public void setLanguage(final String language) {
+        if (!java.util.Objects.equals(this.language, language)) {
+            this.language = language;
+            this.cachedLabelResolver = null;
+        }
+    }
+
     public boolean verbose() {
         return this.verbose;
     }
 
     public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public boolean labels() {
+        return this.labels;
+    }
+
+    public void setLabels(final boolean labels) {
+        this.labels = labels;
+    }
+
+    public LabelResolver labelResolver() {
+        if (this.cachedLabelResolver == null) {
+            this.cachedLabelResolver = new LabelResolver(this.sdkVersion, this.sdkPath, this.language);
+        }
+        return this.cachedLabelResolver;
     }
 
     public String rightPrompt() {
@@ -80,6 +115,7 @@ public final class SessionContext {
             sb.append(" | ");
         }
         sb.append(this.mode);
+        sb.append(" | ").append(this.language);
         if (this.verbose) {
             sb.append(" | verbose");
         }
