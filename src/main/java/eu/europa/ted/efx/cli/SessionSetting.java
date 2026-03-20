@@ -35,7 +35,7 @@ public enum SessionSetting {
             ctx -> objectToString(ctx.sdkPath()),
             (ctx, val) -> ctx.setSdkPath(Path.of(val))),
 
-    MODE("mode", Arrays.asList("schxslt", "phpure"), false,
+    MODE("mode", Arrays.asList("phpure", "schxslt"), false,
             SessionContext::mode,
             (ctx, val) -> ctx.setMode(val)),
 

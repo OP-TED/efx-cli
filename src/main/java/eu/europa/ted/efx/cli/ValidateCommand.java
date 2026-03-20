@@ -82,7 +82,7 @@ public class ValidateCommand implements Callable<Integer> {
             arity = "0..1", defaultValue = Option.NULL_VALUE, fallbackValue = "true")
     String mock;
 
-    @Option(names = { "--mode" }, description = "Validation mode: schxslt or phpure (default: schxslt)")
+    @Option(names = { "--mode" }, description = "Validation mode: phpure (default) or schxslt")
     String mode;
 
     @Override

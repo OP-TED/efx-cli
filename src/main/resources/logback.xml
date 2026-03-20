@@ -13,4 +13,5 @@
     </root>
 
     <logger name="eu.europa.ted.efx.cli" level="INFO" />
+    <logger name="com.helger.schematron.pure.xpath.XPathEvaluationHelper" level="ERROR" />
 </configuration>

@@ -26,7 +26,7 @@ public final class SessionContext {
 
     private String sdkVersion;
     private Path sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
-    private String mode = "schxslt";
+    private String mode = "phpure";
     private boolean verbose;
 
     private SessionContext() {
