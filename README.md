@@ -24,7 +24,7 @@ Run without arguments to start the interactive shell:
 java -jar target/efx-cli-1.0.0-SNAPSHOT.jar
 ```
 
-The shell provides tab completion, command history (persisted across sessions), syntax highlighting, and auto-suggestions from history.
+The shell provides tab completion, command history (persisted in `~/.efx-cli/history`), syntax highlighting, and auto-suggestions from history.
 
 ### One-Shot Mode
 
@@ -41,7 +41,7 @@ java -jar target/efx-cli-1.0.0-SNAPSHOT.jar validate --rules rules.efx --notice 
 Validate an XML notice against EFX rules.
 
 ```
-validate --rules <file> --notice <file> --sdk-version <version> [options]
+validate --rules <file> --notice <file> [options]
 ```
 
 | Option | Description |
@@ -52,16 +52,20 @@ validate --rules <file> --notice <file> --sdk-version <version> [options]
 | `-v`, `--sdk-version` | eForms SDK version (e.g. `2.0.0`) |
 | `-p`, `--sdk-path` | Path to eForms SDK root |
 | `-e`, `--endpoint` | Runtime endpoint URL override (e.g. `default=http://localhost:8080/v1`) |
-| `-o`, `--output` | Write raw SVRL report to file |
-| `--mode` | Validation mode: `schxslt` (default) or `phpure` |
+| `-o`, `--output` | Write SVRL report to file (default: `output/<notice-name>.svrl`) |
+| `--mode` | Validation mode: `phpure` (default) or `schxslt` |
 | `--mock` | Start a built-in mock API server (`true`, `false`, or `error`) |
 
-Either `--rules` or `--schematron` is required. When using `--rules`, `--sdk-version` is also required.
+Either `--rules` or `--schematron` is required. When using `--rules`, `--sdk-version` is also required (or set via `config`).
+
+The SVRL report is always written to the `output/` directory by default. Use `--output` to override the path.
+
+When `labels` is enabled (via `config labels true`), validation messages are resolved to human-readable text using the SDK's translation files.
 
 **Examples:**
 
 ```bash
-# Validate with EFX rules
+# Validate with EFX rules (SVRL written to output/notice.svrl)
 validate --rules rules.efx --notice notice.xml -v 2.0.0
 
 # Validate with a pre-compiled Schematron
@@ -70,10 +74,13 @@ validate --schematron validation.sch --notice notice.xml
 # Validate with a mock API server (dynamic rules return true)
 validate --rules rules.efx --notice notice.xml -v 2.0.0 --mock
 
-# Validate using ph-schematron-pure mode
-validate --rules rules.efx --notice notice.xml -v 2.0.0 --mode phpure
+# Validate with mock returning false (dynamic rules fail)
+validate --rules rules.efx --notice notice.xml -v 2.0.0 --mock false
 
-# Write SVRL report to file
+# Validate using SchXSLT mode
+validate --rules rules.efx --notice notice.xml -v 2.0.0 --mode schxslt
+
+# Write SVRL report to a specific file
 validate --rules rules.efx --notice notice.xml -v 2.0.0 -o report.svrl
 ```
 
@@ -82,7 +89,7 @@ validate --rules rules.efx --notice notice.xml -v 2.0.0 -o report.svrl
 Translate EFX rules to Schematron.
 
 ```
-translate-rules --input <file> --output <dir> --sdk-version <version> [options]
+translate-rules --input <file> --output <dir> [options]
 ```
 
 | Option | Description |
@@ -102,9 +109,18 @@ config <key>                    # show a single setting
 config <key> <value>            # set a value
 ```
 
-Available settings: `sdk-version`, `sdk-path`, `mode`, `verbose`.
+Available settings:
 
-Settings set via `config` or passed as command options persist for the duration of the shell session and are shown in the right prompt.
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `sdk-version` | eForms SDK version | (not set) |
+| `sdk-path` | Path to eForms SDK root | `eforms-sdk` |
+| `mode` | Validation mode (`phpure` or `schxslt`) | `phpure` |
+| `language` | Language for label resolution (e.g. `en`, `fr`) | `en` |
+| `verbose` | Enable debug logging | `false` |
+| `labels` | Resolve rule labels to human-readable text | `false` |
+
+Settings persist for the duration of the shell session. Options passed to commands (e.g. `--sdk-version`) update the session automatically. Current values are shown in the right prompt.
 
 #### `clear`
 
