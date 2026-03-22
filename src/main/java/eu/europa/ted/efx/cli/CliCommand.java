@@ -24,6 +24,7 @@ import eu.europa.ted.efx.cli.command.ClearCommand;
 import eu.europa.ted.efx.cli.command.ConfigCommand;
 import eu.europa.ted.efx.cli.command.TranslateRulesCommand;
 import eu.europa.ted.efx.cli.command.ValidateCommand;
+import eu.europa.ted.efx.cli.command.VisualiseCommand;
 import eu.europa.ted.efx.cli.shell.LoggingConfigurator;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
@@ -41,7 +42,7 @@ import picocli.CommandLine.ScopeType;
         " ▒▒▒▒▒▒   ▒▒▒▒▒     ▒▒▒▒▒ ▒▒▒▒▒             ▒▒▒▒▒▒  ▒▒▒▒▒ ▒▒▒▒▒ ",
         "",
         "Command Line Interface for the EFX Toolkit"
-}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class, ValidateCommand.class, ConfigCommand.class, ClearCommand.class })
+}, versionProvider = CliCommand.ManifestVersionProvider.class, subcommands = { TranslateRulesCommand.class, ValidateCommand.class, VisualiseCommand.class, ConfigCommand.class, ClearCommand.class })
 public class CliCommand implements Callable<Integer> {
 
     @Option(names = { "--verbose" }, description = "Enable verbose output", scope = ScopeType.INHERIT)
