@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.validation;
 
 import java.io.File;
 import java.io.StringReader;
@@ -29,7 +29,7 @@ import javax.xml.transform.stream.StreamSource;
  * Compiles a Schematron file into a reusable XSLT {@link Templates} using the
  * SchXSLT 3-step pipeline: include, expand, compile-for-svrl.
  */
-class SchematronCompiler {
+public class SchematronCompiler {
 
     private static final String[] PIPELINE_STEPS = {
             "/xslt/2.0/include.xsl",
@@ -40,13 +40,13 @@ class SchematronCompiler {
     private final TransformerFactory transformerFactory;
     private final SchematronResolver resolver;
 
-    SchematronCompiler() {
+    public SchematronCompiler() {
         this.resolver = new SchematronResolver();
         this.transformerFactory = TransformerFactory.newInstance();
         this.transformerFactory.setURIResolver(this.resolver);
     }
 
-    Templates compile(final File schematronFile) throws TransformerException {
+    public Templates compile(final File schematronFile) throws TransformerException {
         final String systemId = schematronFile.toURI().toString();
         Source source = new StreamSource(schematronFile);
         String result = null;

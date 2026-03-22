@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import eu.europa.ted.efx.cli.shell.CliHighlighter;
+import eu.europa.ted.efx.cli.shell.SessionContext;
+import eu.europa.ted.efx.cli.shell.SessionSetting;
 import org.jline.builtins.Completers;
 import org.jline.builtins.ConfigurationPath;
 import org.jline.console.SystemRegistry;
@@ -36,8 +39,10 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.MaskingCallback;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
+import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.widget.AutosuggestionWidgets;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
@@ -120,21 +125,24 @@ public class Application {
                         .variable(LineReader.HISTORY_IGNORE, "^(clear|exit|help)$")
                         .build();
                 reader.getKeyMaps().get(LineReader.MAIN)
-                        .bind(new org.jline.reader.Reference(LineReader.KILL_WHOLE_LINE),
+                        .bind(new Reference(LineReader.KILL_WHOLE_LINE),
                                 "\033");
-                new org.jline.widget.AutosuggestionWidgets(reader).enable();
+                new AutosuggestionWidgets(reader).enable();
                 builtins.setLineReader(reader);
                 factory.setTerminal(terminal);
 
+                System.out.print("\033[2J\033[H");
+                System.out.flush();
                 printBanner();
 
-                final String prompt = "\033[36mefx>\033[0m ";
+                final String prompt = "\033[36mefx-cli>\033[0m ";
 
                 while (true) {
                     try {
                         systemRegistry.cleanUp();
-                        final String line = reader.readLine(prompt,
-                                SessionContext.instance().rightPrompt(),
+                        final String rightPrompt = "\033[90m"
+                                + SessionContext.instance().summary() + "\033[0m";
+                        final String line = reader.readLine(prompt, rightPrompt,
                                 (MaskingCallback) null, null);
                         systemRegistry.execute(line);
                     } catch (final UserInterruptException e) {

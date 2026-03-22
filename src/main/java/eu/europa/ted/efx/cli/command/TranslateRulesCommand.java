@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.command;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -20,14 +20,22 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ted.efx.EfxTranslator;
+import eu.europa.ted.efx.cli.CliCommand;
+import eu.europa.ted.efx.cli.shell.LoggingConfigurator;
+import eu.europa.ted.efx.cli.shell.SessionContext;
+import eu.europa.ted.efx.cli.shell.Spinner;
+import eu.europa.ted.efx.cli.sdk.EfxCliTranslatorDependencyFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 
 @Command(name = "translate-rules", description = "Translates EFX rules to Schematron")
 public class TranslateRulesCommand implements Callable<Integer> {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TranslateRulesCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(TranslateRulesCommand.class);
 
     @ParentCommand
     CliCommand parent;
@@ -50,9 +58,9 @@ public class TranslateRulesCommand implements Callable<Integer> {
 
         if (this.parent != null && this.parent.verbose) {
             session.setVerbose(true);
-            LoggingConfigurator.enableDebug();
+            LoggingConfigurator.instance().enableDebug();
         } else if (session.verbose()) {
-            LoggingConfigurator.enableDebug();
+            LoggingConfigurator.instance().enableDebug();
         }
 
         if (this.sdkVersion == null) {

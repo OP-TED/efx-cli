@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.validation;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,12 +27,12 @@ import com.sun.net.httpserver.HttpServer;
  * <p>Responds to all requests with a configurable value:
  * {@code "1"} (true), {@code "0"} (false), or {@code "-1"} (error).</p>
  */
-class MockApiServer implements AutoCloseable {
+public class MockApiServer implements AutoCloseable {
 
     private final HttpServer server;
     private final int port;
 
-    MockApiServer(final String response) throws IOException {
+    public MockApiServer(final String response) throws IOException {
         this.server = HttpServer.create(new InetSocketAddress(0), 0);
         this.port = this.server.getAddress().getPort();
 
@@ -47,7 +47,7 @@ class MockApiServer implements AutoCloseable {
         this.server.start();
     }
 
-    String baseUrl() {
+    public String baseUrl() {
         return "http://localhost:" + this.port;
     }
 

@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -61,8 +61,8 @@ public class Spinner implements AutoCloseable {
             int i = 0;
             while (this.running) {
                 synchronized (this.lock) {
-                    final String frame = "\r\033[36m" + FRAMES[i % FRAMES.length] + " " + message + "\033[0m";
-                    this.spinnerLineLength = message.length() + 3;
+                    final String frame = "\r\033[36m" + FRAMES[i % FRAMES.length] + " " + this.message + "\033[0m";
+                    this.spinnerLineLength = this.message.length() + 3;
                     this.originalOut.print(frame);
                     this.originalOut.flush();
                 }

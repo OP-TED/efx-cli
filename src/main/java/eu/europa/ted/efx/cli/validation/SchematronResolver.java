@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.validation;
 
 import java.net.URL;
 

@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.sdk;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -27,17 +27,17 @@ import eu.europa.ted.eforms.sdk.resource.SdkResourceLoader;
  * Resolves validation rule label keys to human-readable text using the SDK's translation files.
  * Falls back to the raw key if the label is not found or the translation file cannot be loaded.
  */
-class LabelResolver {
+public class LabelResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(LabelResolver.class);
 
     private final Properties labels;
 
-    LabelResolver(final String sdkVersion, final Path sdkPath, final String language) {
+    public LabelResolver(final String sdkVersion, final Path sdkPath, final String language) {
         this.labels = loadLabels(sdkVersion, sdkPath, language);
     }
 
-    String resolve(final String key) {
+    public String resolve(final String key) {
         return this.labels.getProperty(key, key);
     }
 

@@ -11,10 +11,13 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.command;
 
 import java.util.concurrent.Callable;
 
+import eu.europa.ted.efx.cli.shell.LoggingConfigurator;
+import eu.europa.ted.efx.cli.shell.SessionContext;
+import eu.europa.ted.efx.cli.shell.SessionSetting;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -61,9 +64,9 @@ public class ConfigCommand implements Callable<Integer> {
         setting.set(session, this.value);
         if (setting == SessionSetting.VERBOSE) {
             if (session.verbose()) {
-                LoggingConfigurator.enableDebug();
+                LoggingConfigurator.instance().enableDebug();
             } else {
-                LoggingConfigurator.disableDebug();
+                LoggingConfigurator.instance().disableDebug();
             }
         }
         System.out.println(this.key + " = " + this.value);

@@ -12,9 +12,15 @@
     <let name="apiUrl-default" value="'http://placeholder/v1'" />
 
     <xsl:function name="efx:call-api" as="xs:integer">
-        <xsl:param name="endpoint-url" as="xs:string"/>
+        <xsl:param name="endpoint-name" as="xs:string"/>
         <xsl:param name="function" as="xs:string"/>
         <xsl:param name="args" as="xs:string*"/>
+        <xsl:variable name="endpoint-url" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$endpoint-name = 'default'"><xsl:value-of select="$apiUrl-default"/></xsl:when>
+                <xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:variable name="base-url" select="concat(
             if (ends-with($endpoint-url, '/')) then $endpoint-url else concat($endpoint-url, '/'),
             $function)"/>
@@ -32,7 +38,7 @@
 
     <pattern id="TEST-PATTERN">
         <rule context="/notice">
-            <let name="__apiResult" value="efx:call-api($apiUrl-default, 'check', (id/normalize-space(text())))"/>
+            <let name="__apiResult" value="efx:call-api('default', 'check', (id/normalize-space(text())))"/>
             <assert test="$__apiResult != -1" id="R-TEST-ERR" role="ERROR">API call failed for id '<value-of select="id"/>'</assert>
             <assert test="$__apiResult = 1" id="R-TEST-001" role="ERROR">Check failed for id '<value-of select="id"/>'</assert>
         </rule>

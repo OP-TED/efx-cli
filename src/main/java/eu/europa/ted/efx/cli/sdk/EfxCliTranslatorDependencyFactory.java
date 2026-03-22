@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.sdk;
 
 import java.nio.file.Path;
 
@@ -57,19 +57,19 @@ public class EfxCliTranslatorDependencyFactory implements TranslatorDependencyFa
     }
 
     @Override
-    public ScriptGenerator createScriptGenerator(String sdkVersion, String qualifier, TranslatorOptions options) {
+    public ScriptGenerator createScriptGenerator(final String sdkVersion, final String qualifier, final TranslatorOptions options) {
         return new XPathScriptGenerator(options);
     }
 
     @Override
-    public MarkupGenerator createMarkupGenerator(String sdkVersion, String qualifier, TranslatorOptions options) {
+    public MarkupGenerator createMarkupGenerator(final String sdkVersion, final String qualifier, final TranslatorOptions options) {
         throw new UnsupportedOperationException(
                 "CLI currently supports only Rules translation which uses ValidatorGenerator");
     }
 
     @Override
-    public ValidatorGenerator createValidatorGenerator(String sdkVersion, String qualifier,
-            TranslatorOptions options) {
+    public ValidatorGenerator createValidatorGenerator(final String sdkVersion, final String qualifier,
+            final TranslatorOptions options) {
         return new SchematronGenerator();
     }
 

@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.validation;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,30 +21,49 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JAXP {@link XPathFunction} that makes an HTTP GET call to an API endpoint
  * and returns the result as an integer (1 = true, 0 = false, -1 = error).
  *
  * <p>Called by ph-schematron-pure when evaluating
- * {@code efx:call-api($endpointUrl, $funcName, ($arg1, $arg2, ...))} in an assert test.</p>
+ * {@code efx:call-api('endpointName', $funcName, ($arg1, $arg2, ...))} in an assert test.</p>
  *
- * <p>The generated URL is: {@code {baseUrl}/{funcName}?arg1={val}&arg2={val}...}</p>
+ * <p>The endpoint name is resolved to a URL using the endpoint registry. The generated URL is:
+ * {@code {resolvedUrl}/{funcName}?arg1={val}&arg2={val}...}</p>
  */
 class EfxCallApiFunction implements XPathFunction {
 
-    private static final org.slf4j.Logger logger =
-            org.slf4j.LoggerFactory.getLogger(EfxCallApiFunction.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(EfxCallApiFunction.class);
+
+    private final Map<String, String> endpointRegistry;
+
+    EfxCallApiFunction(final Map<String, String> endpointRegistry) {
+        this.endpointRegistry = endpointRegistry != null
+                ? endpointRegistry : Collections.emptyMap();
+    }
 
     @Override
     @SuppressWarnings("rawtypes")
     public Object evaluate(final List args) throws XPathFunctionException {
-        final String baseUrl = String.valueOf(args.get(0));
+        final String endpointName = String.valueOf(args.get(0));
         final String funcName = String.valueOf(args.get(1));
+
+        final String baseUrl = this.endpointRegistry.get(endpointName);
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            logger.warn("No URL configured for endpoint '{}'", endpointName);
+            return -1;
+        }
 
         final List<String> apiArgs = this.extractApiArgs(args);
         final String url = this.buildUrl(baseUrl, funcName, apiArgs);

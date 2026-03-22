@@ -11,11 +11,13 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.shell;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 import eu.europa.ted.eforms.sdk.SdkConstants;
+import eu.europa.ted.efx.cli.sdk.LabelResolver;
 
 /**
  * Holds session-level settings that persist across commands within an interactive shell session.
@@ -44,7 +46,7 @@ public final class SessionContext {
     }
 
     public void setSdkVersion(final String sdkVersion) {
-        if (!java.util.Objects.equals(this.sdkVersion, sdkVersion)) {
+        if (!Objects.equals(this.sdkVersion, sdkVersion)) {
             this.sdkVersion = sdkVersion;
             this.cachedLabelResolver = null;
         }
@@ -55,7 +57,7 @@ public final class SessionContext {
     }
 
     public void setSdkPath(final Path sdkPath) {
-        if (!java.util.Objects.equals(this.sdkPath, sdkPath)) {
+        if (!Objects.equals(this.sdkPath, sdkPath)) {
             this.sdkPath = sdkPath;
             this.cachedLabelResolver = null;
         }
@@ -74,7 +76,7 @@ public final class SessionContext {
     }
 
     public void setLanguage(final String language) {
-        if (!java.util.Objects.equals(this.language, language)) {
+        if (!Objects.equals(this.language, language)) {
             this.language = language;
             this.cachedLabelResolver = null;
         }
@@ -103,23 +105,16 @@ public final class SessionContext {
         return this.cachedLabelResolver;
     }
 
-    public String rightPrompt() {
+    public String summary() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("\033[90m");
-        boolean first = true;
         if (this.sdkVersion != null) {
-            sb.append("sdk:").append(this.sdkVersion);
-            first = false;
-        }
-        if (!first) {
-            sb.append(" | ");
+            sb.append("sdk:").append(this.sdkVersion).append(" | ");
         }
         sb.append(this.mode);
         sb.append(" | ").append(this.language);
         if (this.verbose) {
             sb.append(" | verbose");
         }
-        sb.append("\033[0m");
         return sb.toString();
     }
 }

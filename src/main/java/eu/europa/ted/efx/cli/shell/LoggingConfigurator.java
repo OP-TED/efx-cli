@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.shell;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -24,25 +24,29 @@ import org.slf4j.LoggerFactory;
 /**
  * Configures logback logging levels and patterns at runtime.
  */
-final class LoggingConfigurator {
+public final class LoggingConfigurator {
+
+    private static final LoggingConfigurator INSTANCE = new LoggingConfigurator();
 
     private LoggingConfigurator() {
     }
 
-    static void enableDebug() {
-        configure(Level.DEBUG, "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n");
+    public static LoggingConfigurator instance() {
+        return INSTANCE;
     }
 
+    public void enableDebug() {
+        this.configure(Level.DEBUG, "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n");
+    }
 
-    static void disableDebug() {
-        configure(Level.WARN, "%colorLevel %msg%n");
+    public void disableDebug() {
+        this.configure(Level.WARN, "%colorLevel %msg%n");
 
         final Logger cliLogger = (Logger) LoggerFactory.getLogger("eu.europa.ted.efx.cli");
         cliLogger.setLevel(Level.INFO);
     }
 
-
-    private static void configure(final Level level, final String pattern) {
+    private void configure(final Level level, final String pattern) {
         final Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         root.setLevel(level);
 

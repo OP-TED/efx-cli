@@ -14,6 +14,7 @@
 package eu.europa.ted.efx.cli;
 
 import org.junit.jupiter.api.Test;
+import eu.europa.ted.efx.cli.sdk.EfxCliTranslatorDependencyFactory;
 import eu.europa.ted.efx.interfaces.ValidatorGenerator;
 import java.nio.file.Paths;
 

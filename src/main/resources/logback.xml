@@ -1,6 +1,6 @@
 <configuration>
     <conversionRule conversionWord="colorLevel"
-                    converterClass="eu.europa.ted.efx.cli.ColorLevelConverter" />
+                    converterClass="eu.europa.ted.efx.cli.shell.ColorLevelConverter" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

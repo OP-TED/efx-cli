@@ -11,7 +11,7 @@
  * or implied. See the Licence for the specific language governing permissions and limitations under
  * the Licence.
  */
-package eu.europa.ted.efx.cli;
+package eu.europa.ted.efx.cli.validation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,32 +25,32 @@ import org.w3c.dom.NodeList;
  * Self-aware model that constructs itself from an SVRL validation report.
  * Owns the extracted failures and answers questions about the validation outcome.
  */
-class ValidationResult {
+public class ValidationResult {
 
     private static final String SVRL_NS = "http://purl.oclc.org/dsdl/svrl";
 
     private final int rulesChecked;
     private final List<Failure> failures = new ArrayList<>();
 
-    ValidationResult(final Document svrl) {
+    public ValidationResult(final Document svrl) {
         this.rulesChecked = svrl.getElementsByTagNameNS(SVRL_NS, "fired-rule").getLength();
         this.extractFailures(svrl.getElementsByTagNameNS(SVRL_NS, "failed-assert"));
         this.extractFailures(svrl.getElementsByTagNameNS(SVRL_NS, "successful-report"));
     }
 
-    boolean isValid() {
+    public boolean isValid() {
         return this.failures.isEmpty();
     }
 
-    int rulesChecked() {
+    public int rulesChecked() {
         return this.rulesChecked;
     }
 
-    int failureCount() {
+    public int failureCount() {
         return this.failures.size();
     }
 
-    List<Failure> failures() {
+    public List<Failure> failures() {
         return Collections.unmodifiableList(this.failures);
     }
 
@@ -65,13 +65,13 @@ class ValidationResult {
         }
     }
 
-    static class Failure {
+    public static class Failure {
         private final String id;
         private final String location;
         private final String role;
         private final String message;
 
-        Failure(final String id, final String location,
+        public Failure(final String id, final String location,
                 final String role, final String message) {
             this.id = id;
             this.location = location;
@@ -79,9 +79,9 @@ class ValidationResult {
             this.message = message;
         }
 
-        String id() { return this.id; }
-        String location() { return this.location; }
-        String role() { return this.role; }
-        String message() { return this.message; }
+        public String id() { return this.id; }
+        public String location() { return this.location; }
+        public String role() { return this.role; }
+        public String message() { return this.message; }
     }
 }
