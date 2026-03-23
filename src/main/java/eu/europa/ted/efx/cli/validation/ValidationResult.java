@@ -22,8 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Self-aware model that constructs itself from an SVRL validation report.
- * Owns the extracted failures and answers questions about the validation outcome.
+ * Parsed SVRL validation report exposing rule counts and failures.
  */
 public class ValidationResult {
 
