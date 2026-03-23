@@ -44,7 +44,7 @@ public class EfxCliTranslatorDependencyFactory implements TranslatorDependencyFa
     @Override
     public SymbolResolver createSymbolResolver(final String sdkVersion, final String qualifier) {
         try {
-            SdkDownloader.downloadSdk(sdkVersion, this.sdkRootPath, false);
+            SdkDownloader.downloadSdk(sdkVersion, this.sdkRootPath, true);
         } catch (final Exception e) {
             logger.warn("SDK download failed ({}), assuming SDK is already available on disk.", e.getMessage());
         }
