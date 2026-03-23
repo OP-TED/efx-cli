@@ -22,8 +22,7 @@ import javax.xml.transform.stream.StreamSource;
 
 /**
  * URI resolver that loads SchXSLT stylesheets from the classpath.
- * Falls back to the JAXP default resolver for all other URIs (e.g. file:// paths
- * for Schematron include directives).
+ * Returns {@code null} for unresolved URIs, delegating to the JAXP default resolver.
  */
 class SchematronResolver implements URIResolver {
 

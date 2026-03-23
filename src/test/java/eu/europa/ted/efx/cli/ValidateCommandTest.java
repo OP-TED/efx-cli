@@ -55,10 +55,10 @@ class ValidateCommandTest {
     private static volatile String mockResponse;
     private static volatile int mockStatusCode;
 
-    private static final Path TEST_SCH = resourcePath("test-validation.sch");
-    private static final Path TEST_NOTICE = resourcePath("test-notice.xml");
-    private static final Path TEST_EFX = resourcePath("test-rules.efx");
-    private static final Path TEST_CN_NOTICE = resourcePath("test-cn-notice.xml");
+    private static final Path TEST_SCH = testFilePath("test-validation.sch");
+    private static final Path TEST_NOTICE = testFilePath("test-notice.xml");
+    private static final Path TEST_EFX = testFilePath("test-rules.efx");
+    private static final Path TEST_CN_NOTICE = testFilePath("test-cn-notice.xml");
     private static final String SDK_VERSION = "2.0.0-SNAPSHOT";
     private static final String SDK_PATH = "eforms-sdk";
 
@@ -168,7 +168,7 @@ class ValidateCommandTest {
                 Arguments.of("check-passes-" + mode, "1", 200, 0, null, mode)));
     }
 
-    private static Path resourcePath(final String name) {
+    private static Path testFilePath(final String name) {
         return Paths.get("src/test/resources/eu/europa/ted/efx/cli/" + name);
     }
 }
