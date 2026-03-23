@@ -88,7 +88,8 @@ public class TranslateRulesCommand implements Callable<Integer> {
         System.out.println("Translating rules from " + this.inputFile + " to " + this.outputDir);
         System.out.println("Using SDK at: " + this.sdkPath.toAbsolutePath());
 
-        final EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(this.sdkPath);
+        final EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(
+                this.sdkPath, SessionContext.instance().snapshots());
 
         try (Spinner ignored = new Spinner("Translating EFX rules...")) {
             final Map<String, String> result = EfxTranslator.translateRules(factory, this.sdkVersion, this.inputFile);

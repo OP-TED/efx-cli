@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.sun.net.httpserver.HttpServer;
 
+import eu.europa.ted.efx.cli.shell.SessionContext;
 import picocli.CommandLine;
 
 /**
@@ -76,6 +77,8 @@ class ValidateCommandTest {
         });
 
         server.start();
+
+        SessionContext.instance().setSnapshots(true);
     }
 
     @AfterAll

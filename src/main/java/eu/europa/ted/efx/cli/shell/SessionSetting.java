@@ -22,7 +22,7 @@ import java.util.function.Function;
 
 /**
  * Enumerates all session settings, their allowed values, and how to read/write them.
- * Single source of truth for config metadata — used by {@link ConfigCommand},
+ * Single source of truth for config metadata — used by the config command,
  * tab completion in the shell, and the syntax highlighter.
  */
 public enum SessionSetting {
@@ -39,9 +39,21 @@ public enum SessionSetting {
             SessionContext::mode,
             (ctx, val) -> ctx.setMode(val)),
 
+    NOTICE("notice", Collections.emptyList(), true,
+            ctx -> objectToString(ctx.notice()),
+            (ctx, val) -> ctx.setNotice(Path.of(val))),
+
     LANGUAGE("language", Collections.emptyList(), false,
             SessionContext::language,
             (ctx, val) -> ctx.setLanguage(val)),
+
+    TEMPLATES_ROOT("templates-root", Collections.emptyList(), true,
+            ctx -> objectToString(ctx.templatesRoot()),
+            (ctx, val) -> ctx.setTemplatesRoot(Path.of(val))),
+
+    SNAPSHOTS("snapshots", Arrays.asList("true", "false"), false,
+            ctx -> String.valueOf(ctx.snapshots()),
+            (ctx, val) -> ctx.setSnapshots(Boolean.parseBoolean(val))),
 
     VERBOSE("verbose", Arrays.asList("true", "false"), false,
             ctx -> String.valueOf(ctx.verbose()),

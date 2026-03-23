@@ -13,14 +13,17 @@
  */
 package eu.europa.ted.efx.cli.sdk;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.europa.ted.eforms.sdk.SdkSymbolResolver;
+import eu.europa.ted.eforms.sdk.ComponentFactory;
 import eu.europa.ted.eforms.sdk.resource.SdkDownloader;
+import eu.europa.ted.eforms.sdk.schematron.SchematronGenerator;
 import eu.europa.ted.efx.exceptions.ThrowingErrorListener;
 import eu.europa.ted.efx.interfaces.MarkupGenerator;
 import eu.europa.ted.efx.interfaces.ScriptGenerator;
@@ -28,49 +31,67 @@ import eu.europa.ted.efx.interfaces.SymbolResolver;
 import eu.europa.ted.efx.interfaces.TranslatorDependencyFactory;
 import eu.europa.ted.efx.interfaces.TranslatorOptions;
 import eu.europa.ted.efx.interfaces.ValidatorGenerator;
-import eu.europa.ted.eforms.sdk.schematron.SchematronGenerator;
-import eu.europa.ted.efx.xpath.XPathScriptGenerator;
 
+/**
+ * Unified dependency factory for both validation (rules translation) and
+ * visualisation (template translation). Uses {@link ComponentFactory} for all
+ * component creation and {@link SdkDownloader} for SDK auto-download.
+ */
 public class EfxCliTranslatorDependencyFactory implements TranslatorDependencyFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(EfxCliTranslatorDependencyFactory.class);
 
     private final Path sdkRootPath;
+    private final boolean allowSnapshots;
 
-    public EfxCliTranslatorDependencyFactory(final Path sdkRootPath) {
+    public EfxCliTranslatorDependencyFactory(final Path sdkRootPath, final boolean allowSnapshots) {
         this.sdkRootPath = sdkRootPath;
+        this.allowSnapshots = allowSnapshots;
     }
 
     @Override
     public SymbolResolver createSymbolResolver(final String sdkVersion, final String qualifier) {
         try {
-            SdkDownloader.downloadSdk(sdkVersion, this.sdkRootPath, true);
+            SdkDownloader.downloadSdk(sdkVersion, this.sdkRootPath, this.allowSnapshots);
         } catch (final Exception e) {
-            logger.warn("SDK download failed ({}), assuming SDK is already available on disk.", e.getMessage());
+            logger.warn("SDK download failed ({}), assuming SDK is already available on disk.",
+                    e.getMessage());
         }
 
         try {
-            return new SdkSymbolResolver(sdkVersion, this.sdkRootPath);
+            return ComponentFactory.getSymbolResolver(sdkVersion, qualifier, this.sdkRootPath);
         } catch (final InstantiationException e) {
-            throw new RuntimeException("Failed to instantiate SdkSymbolResolver", e);
+            throw new RuntimeException(MessageFormat.format(
+                    "Failed to instantiate Symbol Resolver for SDK version [{0}]", sdkVersion), e);
         }
     }
 
     @Override
-    public ScriptGenerator createScriptGenerator(final String sdkVersion, final String qualifier, final TranslatorOptions options) {
-        return new XPathScriptGenerator(options);
+    public ScriptGenerator createScriptGenerator(final String sdkVersion, final String qualifier,
+            final TranslatorOptions options) {
+        try {
+            return ComponentFactory.getScriptGenerator(sdkVersion, qualifier, options);
+        } catch (final InstantiationException e) {
+            throw new RuntimeException(MessageFormat.format(
+                    "Failed to instantiate Script Generator for SDK version [{0}]", sdkVersion), e);
+        }
     }
 
     @Override
-    public MarkupGenerator createMarkupGenerator(final String sdkVersion, final String qualifier, final TranslatorOptions options) {
-        throw new UnsupportedOperationException(
-                "CLI currently supports only Rules translation which uses ValidatorGenerator");
+    public MarkupGenerator createMarkupGenerator(final String sdkVersion, final String qualifier,
+            final TranslatorOptions options) {
+        try {
+            return ComponentFactory.getMarkupGenerator(sdkVersion, qualifier, options);
+        } catch (final InstantiationException e) {
+            throw new RuntimeException(MessageFormat.format(
+                    "Failed to instantiate Markup Generator for SDK version [{0}]", sdkVersion), e);
+        }
     }
 
     @Override
     public ValidatorGenerator createValidatorGenerator(final String sdkVersion, final String qualifier,
             final TranslatorOptions options) {
-        return new SchematronGenerator();
+        return new SchematronGenerator(options);
     }
 
     @Override

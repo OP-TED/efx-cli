@@ -42,3 +42,5 @@ eforms-sdk/
 fix_rules.py
 output/
 src/test/resources/**/*.svrl
+templates/
+PLAN-*.md

@@ -33,28 +33,10 @@
         <version.junit>5.10.2</version.junit>
         <version.saxon>11.3</version.saxon>
         <version.schxslt>1.9.5</version.schxslt>
-        <version.ph-schematron>9.1.0</version.ph-schematron>
-        <version.ph-commons>12.1.0</version.ph-commons>
+        <version.ph-schematron>8.0.4</version.ph-schematron>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Align ph-commons versions: ph-schematron-pure 9.1.0 needs 12.x,
-                 but eforms-core-java pulls in ph-jaxb:11.x which brings ph-commons:11.x -->
-            <dependency>
-                <groupId>com.helger.commons</groupId>
-                <artifactId>ph-commons</artifactId>
-                <version>${version.ph-commons}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.helger.commons</groupId>
-                <artifactId>ph-jaxb</artifactId>
-                <version>${version.ph-commons}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <dependencies>
+<dependencies>
         <!-- EFX Toolkit -->
         <dependency>
             <groupId>eu.europa.ted.eforms</groupId>
@@ -78,6 +60,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
             <version>${version.slf4j}</version>
         </dependency>
         <dependency>
@@ -105,6 +92,18 @@
             <groupId>com.helger.schematron</groupId>
             <artifactId>ph-schematron-pure</artifactId>
             <version>${version.ph-schematron}</version>
+        </dependency>
+
+        <!-- Notice Viewer -->
+        <dependency>
+            <groupId>eu.europa.ted.eforms</groupId>
+            <artifactId>eforms-notice-viewer</artifactId>
+            <version>0.12.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jcs3-core</artifactId>
+            <version>3.1</version>
         </dependency>
 
         <!-- Testing -->

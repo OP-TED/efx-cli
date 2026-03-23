@@ -42,6 +42,7 @@ import com.helger.schematron.pure.SchematronResourcePure;
 import com.helger.schematron.pure.xpath.XPathConfigBuilder;
 
 import eu.europa.ted.eforms.sdk.SdkConstants;
+import eu.europa.ted.eforms.NoticeDocument;
 import eu.europa.ted.efx.EfxTranslator;
 import eu.europa.ted.efx.cli.CliCommand;
 import eu.europa.ted.efx.cli.shell.LoggingConfigurator;
@@ -74,7 +75,7 @@ public class ValidateCommand implements Callable<Integer> {
     @Option(names = { "-s", "--schematron" }, description = "Pre-compiled Schematron file (skips EFX translation)")
     Path schematronFile;
 
-    @Option(names = { "-n", "--notice" }, description = "XML notice file to validate", required = true)
+    @Option(names = { "-n", "--notice" }, description = "XML notice file to validate")
     Path noticeFile;
 
     @Option(names = { "-v", "--sdk-version" }, description = "eForms SDK version (e.g. 1.14.0)")
@@ -148,6 +149,19 @@ public class ValidateCommand implements Callable<Integer> {
             LoggingConfigurator.instance().enableDebug();
         }
 
+        if (this.noticeFile == null) {
+            this.noticeFile = session.notice();
+        } else {
+            session.setNotice(this.noticeFile);
+        }
+
+        if (this.sdkVersion == null && this.noticeFile != null && Files.exists(this.noticeFile)) {
+            try {
+                this.sdkVersion = new NoticeDocument(this.noticeFile).getEformsSdkVersion();
+            } catch (final Exception e) {
+                logger.debug("Could not extract SDK version from notice: {}", e.getMessage());
+            }
+        }
         if (this.sdkVersion == null) {
             this.sdkVersion = session.sdkVersion();
         } else {
@@ -181,6 +195,9 @@ public class ValidateCommand implements Callable<Integer> {
         }
         if (this.schematronFile != null && !Files.exists(this.schematronFile)) {
             return "Schematron file not found: " + this.schematronFile;
+        }
+        if (this.noticeFile == null) {
+            return "Notice file is required (--notice or set via 'config notice <path>')";
         }
         if (!Files.exists(this.noticeFile)) {
             return "Notice file not found: " + this.noticeFile;
@@ -274,7 +291,8 @@ public class ValidateCommand implements Callable<Integer> {
 
     private void translateRules(final Path outputDir) throws Exception {
         final EfxCliTranslatorDependencyFactory factory =
-                new EfxCliTranslatorDependencyFactory(this.sdkPath);
+                new EfxCliTranslatorDependencyFactory(this.sdkPath,
+                        SessionContext.instance().snapshots());
         final Map<String, String> translated =
                 EfxTranslator.translateRules(factory, this.sdkVersion, this.inputFile);
 

@@ -24,7 +24,7 @@ public class DependencyFactoryTest {
 
     @Test
     public void testCreateValidatorGenerator() {
-        EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(Paths.get("."));
+        EfxCliTranslatorDependencyFactory factory = new EfxCliTranslatorDependencyFactory(Paths.get("."), false);
         ValidatorGenerator generator = factory.createValidatorGenerator("1.0", "",
                 eu.europa.ted.efx.EfxTranslatorOptions.DEFAULT);
         assertNotNull(generator);

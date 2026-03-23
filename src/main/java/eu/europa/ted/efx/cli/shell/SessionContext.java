@@ -30,6 +30,9 @@ public final class SessionContext {
     private Path sdkPath = SdkConstants.DEFAULT_SDK_ROOT;
     private String mode = "phpure";
     private String language = "en";
+    private Path notice;
+    private Path templatesRoot;
+    private boolean snapshots;
     private boolean verbose;
     private boolean labels;
     private LabelResolver cachedLabelResolver;
@@ -80,6 +83,30 @@ public final class SessionContext {
             this.language = language;
             this.cachedLabelResolver = null;
         }
+    }
+
+    public Path notice() {
+        return this.notice;
+    }
+
+    public void setNotice(final Path notice) {
+        this.notice = notice;
+    }
+
+    public Path templatesRoot() {
+        return this.templatesRoot;
+    }
+
+    public void setTemplatesRoot(final Path templatesRoot) {
+        this.templatesRoot = templatesRoot;
+    }
+
+    public boolean snapshots() {
+        return this.snapshots;
+    }
+
+    public void setSnapshots(final boolean snapshots) {
+        this.snapshots = snapshots;
     }
 
     public boolean verbose() {

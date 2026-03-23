@@ -48,7 +48,7 @@ validate --rules <file> --notice <file> [options]
 |--------|-------------|
 | `-r`, `--rules` | EFX rules file |
 | `-s`, `--schematron` | Pre-compiled Schematron file (skips EFX translation) |
-| `-n`, `--notice` | XML notice file to validate (required) |
+| `-n`, `--notice` | XML notice file to validate |
 | `-v`, `--sdk-version` | eForms SDK version (e.g. `2.0.0`) |
 | `-p`, `--sdk-path` | Path to eForms SDK root |
 | `-e`, `--endpoint` | Runtime endpoint URL override (e.g. `default=http://localhost:8080/v1`) |
@@ -84,6 +84,42 @@ validate --rules rules.efx --notice notice.xml -v 2.0.0 --mode schxslt
 validate --rules rules.efx --notice notice.xml -v 2.0.0 -o report.svrl
 ```
 
+#### `visualise`
+
+Render an XML notice as HTML using EFX view templates from the SDK.
+
+```
+visualise --notice <file> --language <code> [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `-n`, `--notice` | XML notice file to render |
+| `-l`, `--language` | Language code (e.g. `en`, `fr`) |
+| `-v`, `--sdk-version` | eForms SDK version |
+| `-p`, `--sdk-path` | Path to eForms SDK root |
+| `--view-id` | Override view template (defaults to notice subtype) |
+| `-o`, `--output` | Output HTML file path (default: `output/html/{viewId}-{language}.html`) |
+| `-f`, `--force` | Force rebuild of cached XSL templates |
+
+**Examples:**
+
+```bash
+# Render a notice in English
+visualise --notice cn_24_maximal.xml --language en
+
+# Render with a specific view template
+visualise --notice cn_24_maximal.xml --language fr --view-id summary
+
+# Force rebuild of XSL cache
+visualise --notice cn_24_maximal.xml --language en --force
+
+# Using session settings (set notice and language once)
+config notice cn_24_maximal.xml
+config language en
+visualise
+```
+
 #### `translate-rules`
 
 Translate EFX rules to Schematron.
@@ -115,8 +151,9 @@ Available settings:
 |---------|-------------|---------|
 | `sdk-version` | eForms SDK version | (not set) |
 | `sdk-path` | Path to eForms SDK root | `eforms-sdk` |
+| `notice` | XML notice file path | (not set) |
 | `mode` | Validation mode (`phpure` or `schxslt`) | `phpure` |
-| `language` | Language for label resolution (e.g. `en`, `fr`) | `en` |
+| `language` | Language for labels and visualisation (e.g. `en`, `fr`) | `en` |
 | `verbose` | Enable debug logging | `false` |
 | `labels` | Resolve rule labels to human-readable text | `false` |
 
