@@ -27,11 +27,32 @@
         <maven.compiler.target>11</maven.compiler.target>
         
         <version.efx-toolkit>2.0.0-SNAPSHOT</version.efx-toolkit>
-        <version.picocli>4.7.5</version.picocli>
+        <version.picocli>4.7.7</version.picocli>
         <version.slf4j>2.0.13</version.slf4j>
         <version.logback>1.5.6</version.logback>
         <version.junit>5.10.2</version.junit>
+        <version.saxon>11.3</version.saxon>
+        <version.schxslt>1.9.5</version.schxslt>
+        <version.ph-schematron>9.1.0</version.ph-schematron>
+        <version.ph-commons>12.1.0</version.ph-commons>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Align ph-commons versions: ph-schematron-pure 9.1.0 needs 12.x,
+                 but eforms-core-java pulls in ph-jaxb:11.x which brings ph-commons:11.x -->
+            <dependency>
+                <groupId>com.helger.commons</groupId>
+                <artifactId>ph-commons</artifactId>
+                <version>${version.ph-commons}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.helger.commons</groupId>
+                <artifactId>ph-jaxb</artifactId>
+                <version>${version.ph-commons}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- EFX Toolkit -->
@@ -47,6 +68,11 @@
             <artifactId>picocli</artifactId>
             <version>${version.picocli}</version>
         </dependency>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-shell-jline3</artifactId>
+            <version>${version.picocli}</version>
+        </dependency>
 
         <!-- Logging -->
         <dependency>
@@ -58,6 +84,27 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${version.logback}</version>
+        </dependency>
+
+        <!-- Saxon-HE: XSLT/XPath processor for SchXSLT pipeline -->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>${version.saxon}</version>
+        </dependency>
+
+        <!-- SchXSLT: Schematron-to-XSLT compilation stylesheets -->
+        <dependency>
+            <groupId>name.dmaus.schxslt</groupId>
+            <artifactId>schxslt</artifactId>
+            <version>${version.schxslt}</version>
+        </dependency>
+
+        <!-- ph-schematron-pure: PHPURE mode validation -->
+        <dependency>
+            <groupId>com.helger.schematron</groupId>
+            <artifactId>ph-schematron-pure</artifactId>
+            <version>${version.ph-schematron}</version>
         </dependency>
 
         <!-- Testing -->
@@ -84,6 +131,11 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

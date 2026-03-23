@@ -38,4 +38,7 @@ build/
 eforms-sdk/
 *.log
 *.efx
+!src/test/resources/**/*.efx
 fix_rules.py
+output/
+src/test/resources/**/*.svrl
