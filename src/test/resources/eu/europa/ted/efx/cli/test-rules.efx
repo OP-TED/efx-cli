@@ -1,0 +1,10 @@
+ENDPOINT 'default' AT 'http://placeholder/v1';
+
+LET dynamic : ?check(text : $noticeId) CALL API;
+
+---- STAGE 16 ----
+
+WITH BT-701-notice
+    ASSERT ?check(BT-701-notice)
+    AS ERROR R-TST-001
+    FOR BT-701-notice IN 16
