@@ -6,7 +6,7 @@
 
     <groupId>eu.europa.ted.eforms</groupId>
     <artifactId>efx-cli</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <name>EFX CLI</name>
@@ -26,7 +26,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         
-        <version.efx-toolkit>2.0.0-SNAPSHOT</version.efx-toolkit>
+        <version.efx-toolkit>2.0.0-alpha.6</version.efx-toolkit>
         <version.picocli>4.7.7</version.picocli>
         <version.slf4j>2.0.13</version.slf4j>
         <version.logback>1.5.6</version.logback>
@@ -98,7 +98,7 @@
         <dependency>
             <groupId>eu.europa.ted.eforms</groupId>
             <artifactId>eforms-notice-viewer</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
