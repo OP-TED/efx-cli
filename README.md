@@ -21,7 +21,7 @@ This will create an executable jar in the `target` directory.
 Run without arguments to start the interactive shell:
 
 ```bash
-java -jar target/efx-cli-1.0.0-SNAPSHOT.jar
+java -jar target/efx-cli-0.1.0.jar
 ```
 
 The shell provides tab completion, command history (persisted in `~/.efx-cli/history`), syntax highlighting, and auto-suggestions from history.
@@ -31,7 +31,7 @@ The shell provides tab completion, command history (persisted in `~/.efx-cli/his
 Pass a command directly:
 
 ```bash
-java -jar target/efx-cli-1.0.0-SNAPSHOT.jar validate --rules rules.efx --notice notice.xml -v 2.0.0
+java -jar target/efx-cli-0.1.0.jar validate --rules rules.efx --notice notice.xml -v 2.0.0
 ```
 
 ### Commands
@@ -132,6 +132,21 @@ translate-rules --input <file> --output <dir> [options]
 |--------|-------------|
 | `-i`, `--input` | Input EFX rules file (required) |
 | `-o`, `--output` | Output directory (required) |
+| `-v`, `--sdk-version` | eForms SDK version |
+| `-p`, `--sdk-path` | Path to eForms SDK root |
+
+#### `extract-dependencies`
+
+Extract field and codelist dependencies from EFX rules into a JSON dependency graph.
+
+```
+extract-dependencies --input <file> --output <file> [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `-i`, `--input` | Input EFX rules file (required) |
+| `-o`, `--output` | Output JSON file (required) |
 | `-v`, `--sdk-version` | eForms SDK version |
 | `-p`, `--sdk-path` | Path to eForms SDK root |
 
