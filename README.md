@@ -4,7 +4,7 @@ Command Line Interface for the EFX Toolkit.
 
 ## Requirements
 
-The EFX CLI requires Java 11 or later.
+The EFX CLI requires Java 21 or later.
 
 ## Building
 
