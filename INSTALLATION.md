@@ -95,13 +95,17 @@ Both commands should report the same version. If they are not recognised, reset
 Create `settings.xml` in your `.m2` folder if it does not exist yet. Steps 3.1 and
 3.2 each add a block inside its `<settings>` element.
 
-### 3.1 — Add the snapshot repository
+### 3.1 — Add the repositories
 
 The development version of `efx-cli` depends on snapshot versions of the EFX
 Toolkit and the Notice Viewer. These are published in the Maven Central snapshot
 repository, which Maven does not use unless you configure it. Without this, the
 build in Step 4 fails with *"Could not find artifact
 eu.europa.ted.eforms:efx-toolkit-java:jar:2.0.0-SNAPSHOT"*.
+
+The profile also lists Maven Central itself. When `efx-cli` downloads an eForms
+SDK, it uses only the repositories of your active profiles, so without this entry
+it cannot download published SDK versions.
 
 Add this to `settings.xml`:
 
@@ -116,6 +120,12 @@ Add this to `settings.xml`:
           <url>https://central.sonatype.com/repository/maven-snapshots/</url>
           <releases><enabled>false</enabled></releases>
           <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
         </repository>
       </repositories>
     </profile>
@@ -202,12 +212,16 @@ Schematron rules). `efx-cli` obtains the SDK in one of two ways:
 - **Automatically** — it downloads the SDK the first time it is needed; or
 - **From disk** — you provide the SDK yourself and point `efx-cli` at it.
 
+Only published SDK versions, such as `2.0.0-alpha.5`, are downloaded
+automatically. For a snapshot version, such as `2.0.0-SNAPSHOT`, you must provide
+the SDK from disk.
+
 To provide an SDK from disk, arrange it as a **root folder containing a sub-folder
 named exactly after the SDK version**, with the SDK contents inside:
 
 ```
 eforms-sdk/                 <- the "SDK root" you pass to --sdk-path
-  2.0.0-SNAPSHOT/           <- a folder named exactly the SDK version
+  2.0.0-alpha.5/            <- a folder named exactly the SDK version
     fields/
     codelists/
     view-templates/
@@ -219,11 +233,18 @@ You then refer to it with two options: `--sdk-path` (the root) and `--sdk-versio
 (the sub-folder name):
 
 ```
---sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT
+--sdk-path ./eforms-sdk --sdk-version 2.0.0-alpha.5
 ```
 
 If you omit `--sdk-path`, `efx-cli` uses a folder named `eforms-sdk` in the current
 directory.
+
+> **WARNING**
+> For a version it can download, `efx-cli` checks the `VERSION` file in the
+> version sub-folder. If the file is missing, or names an older patch than the
+> latest published one, `efx-cli` **deletes the sub-folder** and downloads the SDK
+> into it again. Do not keep your own changes in the sub-folder of a published
+> version.
 
 > **NOTE**
 > The value of `--sdk-version` must match the sub-folder name exactly. If this is
@@ -237,9 +258,9 @@ The different commands have different requirements for the SDK files needed and 
 | command | files/folders required | notes |
 | --- | --- | --- |
 | validate --schematron | complete-validation.sch and the other .sch files | |
-| validate --rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version; if --sdk-version is omitted, uses the SDK version declared in the notice. Does not check the version inside the SDK |
-| translate-rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check the version inside the SDK |
-| extract-dependencies | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check the version inside the SDK |
+| validate --rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version; if --sdk-version is omitted, uses the SDK version declared in the notice |
+| translate-rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version |
+| extract-dependencies | codelists, fields, notice-types | uses --sdk-path and --sdk-version |
 | visualise | the complete SDK | uses --sdk-path as the SDK root, but takes the SDK version from the notice and ignores --sdk-version. If that version is not in the SDK root, it is downloaded there |
 
 ## Running the commands
@@ -252,7 +273,7 @@ the Windows command prompt).
 **Translate EFX rules to Schematron**
 
 ```
-java -jar efx-cli-<version>.jar translate-rules --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output output-folder
+java -jar efx-cli-<version>.jar translate-rules --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-alpha.5 --output output-folder
 ```
 
 The generated `.sch` files are written to `output-folder`.
@@ -260,7 +281,7 @@ The generated `.sch` files are written to `output-folder`.
 **Extract dependencies from EFX rules**
 
 ```
-java -jar efx-cli-<version>.jar extract-dependencies --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output dependencies.json
+java -jar efx-cli-<version>.jar extract-dependencies --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-alpha.5 --output dependencies.json
 ```
 
 The generated JSON is written to `dependencies.json`.
@@ -277,7 +298,7 @@ alternative validation engine if needed (the default is `phpure`).
 **Validate a notice against EFX rules**
 
 ```
-java -jar efx-cli-<version>.jar validate --notice notice.xml --rules rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output report.svrl
+java -jar efx-cli-<version>.jar validate --notice notice.xml --rules rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-alpha.5 --output report.svrl
 ```
 
 `--sdk-version` can be omitted if the notice declares its SDK version, and
