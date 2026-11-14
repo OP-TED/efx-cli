@@ -1,30 +1,32 @@
 # Installation guide for efx-cli
 
-`efx-cli` is a command-line tool for working with the eForms SDK. It can render a 
-notice as HTML (`visualise`), translate EFX rules to Schematron 
-(`translate-rules`), validate a notice against Schematron rules (`validate`), and 
-extract field and codelist dependencies from EFX rules into a JSON dependency 
+`efx-cli` is a command-line tool for working with the eForms SDK. It can render a
+notice as HTML (`visualise`), translate EFX rules to Schematron
+(`translate-rules`), validate a notice against Schematron rules (`validate`), and
+extract field and codelist dependencies from EFX rules into a JSON dependency
 graph (`extract-dependencies`).
 
-This guide describes the one-time setup you need before the commands will work. 
+This guide describes the one-time setup you need before the commands will work.
 
 ### Contents
 
-- Prerequisites
-- How efx-cli uses Maven and the eForms SDK
-- Step 1 — Install a Java Development Kit
-- Step 2 — Obtain the efx-cli tool
-- Step 3 — Configure network access
-- Step 4 — Make an eForms SDK available
-- Running the commands
-- Troubleshooting
-- Known limitations
+- [Prerequisites](#prerequisites)
+- [How efx-cli uses Maven and the eForms SDK](#how-efx-cli-uses-maven-and-the-eforms-sdk)
+- [Step 1 — Install a Java Development Kit](#step-1--install-a-java-development-kit)
+- [Step 2 — Install Apache Maven](#step-2--install-apache-maven)
+- [Step 3 — Configure Maven](#step-3--configure-maven)
+- [Step 4 — Build efx-cli](#step-4--build-efx-cli)
+- [Step 5 — Make an eForms SDK available](#step-5--make-an-eforms-sdk-available)
+- [Command SDK requirements](#command-sdk-requirements)
+- [Running the commands](#running-the-commands)
+- [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
-- A **Java Development Kit (JDK)**, version 17 or later.
+- A **Java Development Kit (JDK)**, version 11 or later.
 - The **Maven** build and dependency-management tool.
-- The [efx-cli](https://github.com/OP-TED/efx-cli) tool.
+- **Git**, to get the source code.
+- The [efx-cli](https://github.com/OP-TED/efx-cli) source code.
 
 ### Prerequisites at a glance
 
@@ -32,18 +34,18 @@ Run these checks in a terminal. Each should print a version; if any command is n
 recognised, follow the corresponding step below.
 
 ```
-java -version      # JDK 17+ (Step 1)
+java -version      # JDK 11 or later (Step 1)
 javac -version     # same version as java (Step 1)
 mvn -version       # Apache Maven, reporting your JDK (Step 2)
-git --version      # to clone the source (Step 2)
+git --version      # to get the source code (Step 4)
 ```
 
 ## How efx-cli uses Maven and the eForms SDK
 
 **Maven** is the build and dependency-management tool that `efx-cli` is built with.
-It is required in two occasions:
+It is required on two occasions:
 
-1. It is used once to build `efx-cli` into a runnable `.jar` (Step 2).
+1. It is used once to build `efx-cli` into a runnable `.jar` (Step 4).
 2. The first time a command needs the eForms SDK or a supporting library, Maven
    downloads it from online repositories and stores a copy on your machine.
 
@@ -53,12 +55,11 @@ That local copy lives in a folder called the local repository, at:
 - macOS / Linux: `~/.m2/repository`
 
 Maven's own configuration lives in a file called `settings.xml` in the same
-`.m2` folder. This is the file you edit to configure network access in Step 3.
-
+`.m2` folder. This is the file you edit in Step 3.
 
 ## Step 1 — Install a Java Development Kit
 
-1. Install a JDK (Java Development Kit).
+1. Install a JDK (Java Development Kit), version 11 or later.
 2. Set the `JAVA_HOME` environment variable to the JDK installation folder, and add
    its `bin` directory to your `PATH`.
 3. Open a new terminal and confirm both tools are found:
@@ -74,29 +75,66 @@ Both commands should report the same version. If they are not recognised, reset
 ## Step 2 — Install Apache Maven
 
 1. Download [Apache Maven](https://maven.apache.org/install.html) and unzip it to
-   a suitable location.
+   a suitable location, then add its `bin` directory to your `PATH`.
 
-OR install it from the command line:
+   On Debian or Ubuntu you can instead install it with the package manager, which
+   requires administrative privileges:
 
    ```
-   apt install maven
+   sudo apt install maven
    ```
 
-2. Add it's `bin` directory to your `PATH`, then confirm it uses your JDK:
+2. Confirm that Maven is found and uses your JDK:
 
    ```
    mvn -version
    ```
 
-## Step 3 — Configure network access
+## Step 3 — Configure Maven
+
+Create `settings.xml` in your `.m2` folder if it does not exist yet. Steps 3.1 and
+3.2 each add a block inside its `<settings>` element.
+
+### 3.1 — Add the snapshot repository
+
+The development version of `efx-cli` depends on snapshot versions of the EFX
+Toolkit and the Notice Viewer. These are published in the Maven Central snapshot
+repository, which Maven does not use unless you configure it. Without this, the
+build in Step 4 fails with *"Could not find artifact
+eu.europa.ted.eforms:efx-toolkit-java:jar:2.0.0-SNAPSHOT"*.
+
+Add this to `settings.xml`:
+
+```xml
+<settings>
+  <profiles>
+    <profile>
+      <id>central-snapshots</id>
+      <repositories>
+        <repository>
+          <id>central-snapshots</id>
+          <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>central-snapshots</activeProfile>
+  </activeProfiles>
+</settings>
+```
+
+### 3.2 — Configure network access
 
 If you have a direct internet connection, skip this step.
 
 On a corporate network you usually reach the internet through an HTTP proxy.
-Maven must be configured to use the proxy for HTTPS connections. 
+Maven must be configured to use the proxy for HTTPS connections.
 
-Create or edit `settings.xml` in your `.m2` folder and add a `<proxies>` block with
-two entries — one `http`, one `https` — pointing at the same proxy:
+Add a `<proxies>` block to `settings.xml` with two entries — one `http`, one
+`https` — pointing at the same proxy:
 
 ```xml
 <settings>
@@ -134,12 +172,12 @@ your network, and list any internal hosts that must be reached directly in
 > appropriate permissions, and rotate the password if your organisation requires
 > it.
 
-Incorrect or missing proxy settings will often result in 
+Incorrect or missing proxy settings will often result in
 a *"connection timed out"* error message.
 
-## Step 4 — Obtain the efx-cli 
+## Step 4 — Build efx-cli
 
-[efx-cli](https://github.com/OP-TED/efx-cli) is distributed as source and built 
+[efx-cli](https://github.com/OP-TED/efx-cli) is distributed as source and built
 into a runnable `.jar`.
 
 1. Get the source and build it:
@@ -150,18 +188,18 @@ into a runnable `.jar`.
    mvn clean package
    ```
 
-3. After a successful build, the runnable file is:
+2. After a successful build, the runnable file is:
 
    ```
    target/efx-cli-<version>.jar
    ```
 
-## Step 4 — Make an eForms SDK available
+## Step 5 — Make an eForms SDK available
 
 Most commands need an eForms SDK (its fields, codelists, view templates and
 Schematron rules). `efx-cli` obtains the SDK in one of two ways:
 
-- **Automatically** — it downloads the SDK the first time it is needed ; or
+- **Automatically** — it downloads the SDK the first time it is needed; or
 - **From disk** — you provide the SDK yourself and point `efx-cli` at it.
 
 To provide an SDK from disk, arrange it as a **root folder containing a sub-folder
@@ -181,14 +219,16 @@ You then refer to it with two options: `--sdk-path` (the root) and `--sdk-versio
 (the sub-folder name):
 
 ```
---sdk-path C:\path\to\eforms-sdk --sdk-version 2.0.0-SNAPSHOT
+--sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT
 ```
+
+If you omit `--sdk-path`, `efx-cli` uses a folder named `eforms-sdk` in the current
+directory.
 
 > **NOTE**
 > The value of `--sdk-version` must match the sub-folder name exactly. If this is
 > not the case, the command fails with
 > *"Failed to instantiate Symbol Resolver for SDK version ..."*.
-
 
 ## Command SDK requirements
 
@@ -197,48 +237,39 @@ The different commands have different requirements for the SDK files needed and 
 | command | files/folders required | notes |
 | --- | --- | --- |
 | validate --schematron | complete-validation.sch and the other .sch files | |
-| validate --rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check version inside SDK |
-| translate-rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check version inside SDK |
-| extract-dependencies | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check version inside SDK |
-| visualise | ? | ignores --sdk-path and --sdk-version, uses SDK declared inside the notice XML and the Maven metadata in .m2 repository, and tries to resolve to a Maven artifact. This method currently fails. |
-
+| validate --rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version; if --sdk-version is omitted, uses the SDK version declared in the notice. Does not check the version inside the SDK |
+| translate-rules | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check the version inside the SDK |
+| extract-dependencies | codelists, fields, notice-types | uses --sdk-path and --sdk-version, does not check the version inside the SDK |
+| visualise | the complete SDK | uses --sdk-path as the SDK root, but takes the SDK version from the notice and ignores --sdk-version. If that version is not in the SDK root, it is downloaded there |
 
 ## Running the commands
 
-The examples below assume `efx-cli-<version>.jar` and a JDK are on your machine.
-Replace paths and the version as appropriate.
+The examples below assume `efx-cli-<version>.jar` and a JDK are on your machine,
+and an SDK root in `./eforms-sdk`. Replace paths and the version as appropriate.
+Each command is on one line so that it works in any terminal (Bash, PowerShell or
+the Windows command prompt).
 
 **Translate EFX rules to Schematron**
 
 ```
-java -jar efx-cli-<version>.jar translate-rules \
-  --input rules.efx \
-  --input C:\path\to\eforms-sdk -v 2.0.0-SNAPSHOT \
-  --output output-folder
+java -jar efx-cli-<version>.jar translate-rules --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output output-folder
 ```
 
-The generated `.sch` files are written to the `out` directory.
+The generated `.sch` files are written to `output-folder`.
 
-**Extract Dependencies from EFX rules**
+**Extract dependencies from EFX rules**
 
 ```
-java -jar efx-cli-<version>.jar extract-dependencies \
-  --input rules.efx \
-  --input C:\path\to\eforms-sdk -v 2.0.0-SNAPSHOT \
-  --output json-file
+java -jar efx-cli-<version>.jar extract-dependencies --input rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output dependencies.json
 ```
 
-The generated JSON is written to the `output` file.
+The generated JSON is written to `dependencies.json`.
 
 **Validate a notice against Schematron**
 
 ```
-java -jar efx-cli-<version>.jar validate \
-  --notice notice.xml \
-  --schematron complete-validation.sch \
-  --output report.svrl
+java -jar efx-cli-<version>.jar validate --notice notice.xml --schematron complete-validation.sch --output report.svrl
 ```
-
 
 The raw SVRL report is written to `report.svrl`. Use `--mode schxslt` to select the
 alternative validation engine if needed (the default is `phpure`).
@@ -246,47 +277,29 @@ alternative validation engine if needed (the default is `phpure`).
 **Validate a notice against EFX rules**
 
 ```
-java -jar efx-cli-<version>.jar validate \
-  --notice notice.xml \
-  --rules rules.efx \
-  --output report.svrl
+java -jar efx-cli-<version>.jar validate --notice notice.xml --rules rules.efx --sdk-path ./eforms-sdk --sdk-version 2.0.0-SNAPSHOT --output report.svrl
 ```
 
-The raw SVRL report is written to `report.svrl`. Use `--mode schxslt` to select the
-alternative validation engine if needed (the default is `phpure`).
+`--sdk-version` can be omitted if the notice declares its SDK version, and
+`--sdk-path` if the SDK root is `./eforms-sdk`. The raw SVRL report is written to
+`report.svrl`. Use `--mode schxslt` to select the alternative validation engine if
+needed (the default is `phpure`).
 
 **Visualise a notice as HTML**
 
 ```
-java -jar efx-cli-<version>.jar visualise \
-  --notice notice.xml \
-  --input C:\path\to\eforms-sdk --language en \
-  --output notice.html
+java -jar efx-cli-<version>.jar visualise --notice notice.xml --sdk-path ./eforms-sdk --language en --output ./notice.html
 ```
-> This has not been successfully tested
+
+If you omit `--output`, the HTML is written to the `output/html` folder.
 
 ## Troubleshooting
 
 | Message | Likely cause | What to do |
 | --- | --- | --- |
-| `Connect timed out` while downloading | Proxy not configured for `https` | Add the `https` `<proxy>` entry (Step 3) |
+| `Could not find artifact eu.europa.ted.eforms:efx-toolkit-java:jar:2.0.0-SNAPSHOT` (during the build) | The snapshot repository is not configured | Add it to `settings.xml` (Step 3.1) |
+| `Connect timed out` while downloading | Proxy not configured for `https` | Add the `https` `<proxy>` entry (Step 3.2) |
 | `No artifacts found for SDK <x.y.z>` (during build/translate) | The version is not reachable from the configured repositories, or the proxy is not applied | Confirm Step 3; confirm the version exists in a repository you can reach |
-| `--sdk-version is required` | No version supplied | Pass `-v <version>`, or set `config sdk-version <version>` |
-| `Failed to instantiate Symbol Resolver for SDK version [X]` | `--sdk-path` is not a root containing a `<version>` sub-folder, or `--sdk-version` does not match the sub-folder name | Fix the SDK layout / version (Step 4) |
-| `visualise`: `Visualisation failed: Cannot invoke "java.nio.file.Path.getFileSystem()" because "path" is null` | `--sdk-path` is not a root containing a `<version>` sub-folder, or `--sdk-version` does not match the sub-folder name | Fix the SDK layout / version (Step 4) |
-| `visualise`: `No artifacts found for SDK <x.y>` | The notice's declared SDK version cannot be resolved from the repositories `efx-cli` consults | See Known limitations |
-
-
-## Known limitations
-
-- **`visualise` SDK resolution.** `visualise` determines the SDK version from the
-  notice itself (it ignores the --sdk-version parameter) and tries to resolve the SDK 
-  artifact from a limited set of repositories:
-  - the Maven metadata in .m2/repository/eu/europa/ted/eforms/eforms-sdk
-  - the [Maven Central snapshots](https://central.sonatype.com/repository/maven-snapshots/eu/europa/ted/eforms/eforms-sdk/maven-metadata.xml)
-
-  Notices whose SDK version is not available in those repositories cannot currently
-  be rendered.
-
-> **NOTE**
-> This method currently fails, as the resolver cannot match a minor version of the SDK (e.g. "1.14") with an artifact version (e.g. "1.14.2").
+| `--sdk-version is required` | No version supplied, and none declared in the notice | Pass `-v <version>`, or set `config sdk-version <version>` |
+| `Failed to instantiate Symbol Resolver for SDK version [X]` | `--sdk-path` is not a root containing a `<version>` sub-folder, or `--sdk-version` does not match the sub-folder name | Fix the SDK layout / version (Step 5) |
+| `visualise`: `Visualisation failed: Cannot invoke "java.nio.file.Path.getFileSystem()" because "path" is null` | `--output` is a bare file name, such as `notice.html` | Prefix the file name with a folder, such as `./notice.html`, or omit `--output` |
