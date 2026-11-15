@@ -212,9 +212,10 @@ Schematron rules). `efx-cli` obtains the SDK in one of two ways:
 - **Automatically** — it downloads the SDK the first time it is needed; or
 - **From disk** — you provide the SDK yourself and point `efx-cli` at it.
 
-Only published SDK versions, such as `2.0.0-alpha.5`, are downloaded
+By default, only published SDK versions, such as `2.0.0-alpha.5`, are downloaded
 automatically. For a snapshot version, such as `2.0.0-SNAPSHOT`, you must provide
-the SDK from disk.
+the SDK from disk, or, in the interactive shell, enable snapshot downloads with
+`config snapshots true`.
 
 To provide an SDK from disk, arrange it as a **root folder containing a sub-folder
 named exactly after the SDK version**, with the SDK contents inside:
@@ -241,10 +242,9 @@ directory.
 
 > **WARNING**
 > For a version it can download, `efx-cli` checks the `VERSION` file in the
-> version sub-folder. If the file is missing, or names an older patch than the
-> latest published one, `efx-cli` **deletes the sub-folder** and downloads the SDK
-> into it again. Do not keep your own changes in the sub-folder of a published
-> version.
+> version sub-folder. If the file is missing, or its contents differ from the
+> version it resolved, `efx-cli` **replaces the entire sub-folder** with a fresh
+> download. Do not keep your own changes in the sub-folder of a published version.
 
 > **NOTE**
 > The value of `--sdk-version` must match the sub-folder name exactly. If this is
