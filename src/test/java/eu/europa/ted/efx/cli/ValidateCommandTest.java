@@ -55,6 +55,7 @@ class ValidateCommandTest {
     private static int port;
     private static volatile String mockResponse;
     private static volatile int mockStatusCode;
+    private static volatile String lastQuery;
 
     private static final Path TEST_SCH = testFilePath("test-validation.sch");
     private static final Path TEST_NOTICE = testFilePath("test-notice.xml");
@@ -69,6 +70,7 @@ class ValidateCommandTest {
         port = server.getAddress().getPort();
 
         server.createContext("/v1/check", exchange -> {
+            lastQuery = exchange.getRequestURI().getRawQuery();
             final byte[] body = mockResponse.getBytes();
             exchange.sendResponseHeaders(mockStatusCode, body.length);
             try (final OutputStream os = exchange.getResponseBody()) {
@@ -101,6 +103,7 @@ class ValidateCommandTest {
         System.setOut(new PrintStream(capture));
 
         try {
+            lastQuery = null;
             final int exitCode = new CommandLine(new CliCommand()).execute(
                     "validate",
                     "--schematron", TEST_SCH.toString(),
@@ -110,6 +113,8 @@ class ValidateCommandTest {
 
             assertEquals(expectedExit, exitCode,
                     "Exit code mismatch for scenario: " + scenario);
+            assertEquals("arg1=SOME-ID", lastQuery,
+                    "Query string mismatch for scenario: " + scenario);
 
             final String output = capture.toString();
             if (expectedAssertId != null) {
@@ -143,6 +148,7 @@ class ValidateCommandTest {
         System.setOut(new PrintStream(capture));
 
         try {
+            lastQuery = null;
             final int exitCode = new CommandLine(new CliCommand()).execute(
                     "validate",
                     "--rules", TEST_EFX.toString(),
@@ -154,6 +160,8 @@ class ValidateCommandTest {
 
             assertEquals(expectedExit, exitCode,
                     "Exit code mismatch for scenario: " + scenario);
+            assertEquals("arg1=TEST-NOTICE-001", lastQuery,
+                    "Query string mismatch for scenario: " + scenario);
 
             final String output = capture.toString();
             if (expectedAssertId != null) {

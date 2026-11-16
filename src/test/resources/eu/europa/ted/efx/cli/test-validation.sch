@@ -14,7 +14,7 @@
     <xsl:function name="efx:call-api" as="xs:integer">
         <xsl:param name="endpoint-name" as="xs:string"/>
         <xsl:param name="function" as="xs:string"/>
-        <xsl:param name="args" as="xs:string*"/>
+        <xsl:param name="query" as="xs:string"/>
         <xsl:variable name="endpoint-url" as="xs:string">
             <xsl:choose>
                 <xsl:when test="$endpoint-name = 'default'"><xsl:value-of select="$apiUrl-default"/></xsl:when>
@@ -24,11 +24,7 @@
         <xsl:variable name="base-url" select="concat(
             if (ends-with($endpoint-url, '/')) then $endpoint-url else concat($endpoint-url, '/'),
             $function)"/>
-        <xsl:variable name="query-params" select="string-join(
-            for $i in 1 to count($args)
-            return concat('arg', $i, '=', encode-for-uri(string($args[$i]))),
-            '&amp;')"/>
-        <xsl:variable name="url" select="if ($query-params != '') then concat($base-url, '?', $query-params) else $base-url"/>
+        <xsl:variable name="url" select="if ($query != '') then concat($base-url, '?', $query) else $base-url"/>
         <xsl:variable name="response" select="
             if ($endpoint-url = '' or not(unparsed-text-available($url)))
             then '-1'
@@ -38,7 +34,7 @@
 
     <pattern id="TEST-PATTERN">
         <rule context="/notice">
-            <let name="__apiResult" value="efx:call-api('default', 'check', (id/normalize-space(text())))"/>
+            <let name="__apiResult" value="efx:call-api('default', 'check', concat('arg1=', encode-for-uri((id/normalize-space(text()), '')[1])))"/>
             <assert test="$__apiResult != -1" id="R-TEST-ERR" role="ERROR">API call failed for id '<value-of select="id"/>'</assert>
             <assert test="$__apiResult = 1" id="R-TEST-001" role="ERROR">Check failed for id '<value-of select="id"/>'</assert>
         </rule>
