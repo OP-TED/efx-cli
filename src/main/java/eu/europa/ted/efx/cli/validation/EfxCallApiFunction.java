@@ -15,12 +15,9 @@ package eu.europa.ted.efx.cli.validation;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +36,9 @@ import org.slf4j.LoggerFactory;
  * {@code efx:call-api('endpointName', $funcName, ($arg1, $arg2, ...))} in an assert test.</p>
  *
  * <p>The endpoint name is resolved to a URL using the endpoint registry. The generated URL is:
- * {@code {resolvedUrl}/{funcName}?arg1={val}&arg2={val}...}</p>
+ * {@code {resolvedUrl}/{funcName}?{query}}, where the query string is built by the generated
+ * Schematron (for example {@code arg1=...&arg2=...&arg2=...}), already URL-encoded, and is
+ * appended as it is.</p>
  */
 class EfxCallApiFunction implements XPathFunction {
 
@@ -65,8 +64,8 @@ class EfxCallApiFunction implements XPathFunction {
             return -1;
         }
 
-        final List<String> apiArgs = this.extractApiArgs(args);
-        final String url = this.buildUrl(baseUrl, funcName, apiArgs);
+        final String query = args.size() > 2 ? this.extractQuery(args.get(2)) : "";
+        final String url = this.buildUrl(baseUrl, funcName, query);
 
         try {
             final HttpClient client = HttpClient.newHttpClient();
@@ -95,34 +94,29 @@ class EfxCallApiFunction implements XPathFunction {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    private List<String> extractApiArgs(final List args) {
-        final List<String> apiArgs = new ArrayList<>();
-        if (args.size() > 2) {
-            final Object argsValue = args.get(2);
-            if (argsValue instanceof Iterable) {
-                for (final Object item : (Iterable<?>) argsValue) {
-                    apiArgs.add(String.valueOf(item));
-                }
-            } else {
-                apiArgs.add(String.valueOf(argsValue));
+    /**
+     * The query string, as built by the generated Schematron. Depending on the XPath engine, a
+     * string result may reach this method as a string or wrapped in a list.
+     */
+    private String extractQuery(final Object queryValue) {
+        if (queryValue instanceof Iterable) {
+            final StringBuilder query = new StringBuilder();
+            for (final Object item : (Iterable<?>) queryValue) {
+                query.append(item);
             }
+            return query.toString();
         }
-        return apiArgs;
+        return queryValue == null ? "" : String.valueOf(queryValue);
     }
 
-    private String buildUrl(final String baseUrl, final String funcName,
-            final List<String> apiArgs) {
+    private String buildUrl(final String baseUrl, final String funcName, final String query) {
         final StringBuilder url = new StringBuilder(baseUrl);
         if (!baseUrl.endsWith("/")) {
             url.append('/');
         }
         url.append(funcName);
-
-        for (int i = 0; i < apiArgs.size(); i++) {
-            url.append(i == 0 ? '?' : '&')
-                    .append("arg").append(i + 1).append('=')
-                    .append(URLEncoder.encode(apiArgs.get(i), StandardCharsets.UTF_8));
+        if (!query.isEmpty()) {
+            url.append('?').append(query);
         }
         return url.toString();
     }
