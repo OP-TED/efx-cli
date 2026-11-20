@@ -7,4 +7,4 @@ LET dynamic : ?check(text : $noticeId) CALL API;
 WITH BT-701-notice
     ASSERT ?check(BT-701-notice)
     AS ERROR R-TST-001
-    FOR BT-701-notice IN 16
+    FOR BT-701-notice IN 16;
