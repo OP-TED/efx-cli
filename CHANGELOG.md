@@ -1,3 +1,17 @@
+# EFX CLI Release Notes
+
+_The EFX CLI is a command line interface for the EFX Toolkit. It provides an interactive shell and one-shot commands for translating, validating, and visualising eForms notices using EFX._
+
+---
+
+## 0.2.0
+
+### Runtime requirement
+
+EFX CLI 0.2.0 and later require **Java 21 or later**. Earlier releases (0.1.0) targeted Java 11. The build now compiles and targets `release 21`, and the shaded CLI jar must be launched with a Java 21 (or newer) runtime.
+
+---
+
 # EFX CLI 0.1.0 Release Notes
 
 _The EFX CLI is a command line interface for the EFX Toolkit. It provides an interactive shell and one-shot commands for translating, validating, and visualising eForms notices using EFX._
